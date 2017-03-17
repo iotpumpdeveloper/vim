@@ -7,6 +7,10 @@ Plug 'kern/vim-es7'
 
 Plug 'mru.vim'
 
+Plug 'posva/vim-vue'
+
+Plug 'vim-scripts/comments.vim'
+
 call plug#end()
 
 function! Strip(input_string)
@@ -124,6 +128,9 @@ let MRU_Exclude_Files = '\.list$\|\.index$\|\.si$\|\.tip$\|\.term$\|\.fugitivebl
 
 "customize MRU file
 let MRU_File = '/tmp/vim_mru_file_list.index'
+
+"ignore file changes and just auto read it
+set autoread
 
 "show most recent files 
 map     <C-R>       :call ShowMostRecentFileList()<CR> 
