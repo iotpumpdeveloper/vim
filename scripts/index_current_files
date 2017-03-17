@@ -1,0 +1,67 @@
+#!/usr/bin/env php 
+<?php 
+## We make the custom output so that we make vim quickfix window "think" that we are grepping the first ocurrence of <php 
+
+/**
+ * parse command line params
+ */
+function parseParameters($noopt = array()) {
+    $result = array();
+    $params = $GLOBALS['argv'];
+    // could use getopt() here (since PHP 5.3.0), but it doesn't work relyingly
+    reset($params);
+    while (list($tmp, $p) = each($params)) {
+        if ($p{0} == '-') {
+            $pname = substr($p, 1);
+            $value = true;
+            if ($pname{0} == '-') {
+                // long-opt (--<param>)
+                $pname = substr($pname, 1);
+                if (strpos($p, '=') !== false) {
+                    // value specified inline (--<param>=<value>)
+                    list($pname, $value) = explode('=', substr($p, 2), 2);
+                }
+            }
+            // check if next parameter is a descriptor or a value
+            $nextparm = current($params);
+            if (!in_array($pname, $noopt) && $value === true && $nextparm !== false && $nextparm{0} != '-') list($tmp, $value) = each($params);
+            $result[$pname] = $value;
+        } else {
+            // param doesn't belong to any option
+            $result[] = $p;
+        }
+    }
+    return $result;
+}
+
+$options = parseParameters();
+$target_directory = $options['projectdir'];
+$file_extensions = $options['projectfileextensions'];
+ 
+$index_dir = $_SERVER['HOME'].'/.vim/fileindex/'.$target_directory;
+shell_exec("mkdir -p $index_dir");
+$index_path = $index_dir."/files.index";
+
+
+$target_file_extensions = array();
+
+$cmd = "find $target_directory -type f";
+
+if ($file_extensions == "all") {
+    $cmd .= " -name \"*\"";
+} else{
+    file_put_contents($index_path, $cmd."\n");
+    $file_extensions_comps = explode(",", $file_extensions);
+    if (count($file_extensions_comps) > 0) {
+        foreach($file_extensions_comps as $extension) {
+            $target_file_extensions[] = "-name \"*.".trim($extension)."\"";
+        }
+        $cmd .= " ".implode(" -or ", $target_file_extensions);
+    }
+}
+
+//need to exclude .git
+
+$cmd .= " -not -path \"*.git*\"";
+$output = trim(shell_exec($cmd));
+file_put_contents($index_path, $output."\n");

@@ -1,0 +1,138 @@
+"Plug initial config
+call plug#begin('~/.vim/plugged')
+
+Plug 'scrooloose/nerdtree'
+
+Plug 'kern/vim-es7'
+
+Plug 'mru.vim'
+
+call plug#end()
+
+function! Strip(input_string)
+    return substitute(a:input_string, '^\s*\(.\{-}\)\s*$', '\1', '')
+endfunction
+
+function! ShowMostRecentFileList()
+    exec 'pedit! /tmp/vim_mru_file_list.index | wincmd k'
+    map <ENTER> <esc>:silent call OpenCurrentLineAsFile()<cr>
+endfunction
+
+function! OpenCurrentLineAsFile()
+    let line = getline('.')
+    if strlen(line) > 0 && line[0] != '#'
+        let filepath = line
+        wincmd j
+        exec 'edit! '.expand(filepath)
+        e
+    endif
+endfunction
+
+function! ShowProjectList()
+    "make sure the window focus is on the rightmost 
+    wincmd l
+    au BufLeave *.list nmap r r
+    pedit! ~/.vim/projects/project.list
+    "map enter key to just switch to project, will not regenerate file index, 0 means no regenerate
+    nmap <ENTER> <esc>:call SwitchToProject(0)<cr>  
+    "map r key in normal mode to regenerate file index and switch to project, 1 means regenerate
+    nmap r <esc>:call SwitchToProject(1)<cr> 
+    wincmd k
+endfunction
+
+function! SwitchToProject(regen_index)
+    let line = getline('.')
+    if strlen(line) > 0 && line[0] != '#'
+        let line_comps = split(line, "|")
+        if len(line_comps) == 2 
+            let project_dir = Strip(line_comps[0])
+            echo project_dir
+            let project_file_extensions = Strip(line_comps[1])
+        else 
+            let project_dir = Strip(line)
+            let project_file_extensions = "all"
+        endif
+        exec 'cd '.project_dir 
+        map <ENTER> <esc>:silent call OpenCurrentLineAsFile()<cr>
+        NERDTree .
+        wincmd w   "try to make sure that the focus is one the file index, not nerdtree 
+        " now close this window 
+        close!
+    endif
+endfunction
+
+
+
+"Custom plugin configuration 
+
+map     <C-N>      :NERDTreeToggle<cr>
+
+set nofoldenable    " disable folding
+
+set noswapfile "no swap file creation
+
+set history=1000         " remember more commands and search history
+set undolevels=1000      " use many muchos levels of undo
+set modifiable "make buffer modifiable"
+"set ruler
+set ruler
+
+syntax on
+set synmaxcol=2048
+set hlsearch
+set hidden
+set ic "case insensitive search"
+set ts=2
+set expandtab
+set tabstop=2
+set clipboard=unnamed
+set autoindent
+set shiftwidth=2
+set number 
+set paste
+set formatoptions=l
+set lbr
+
+"longest auto complete
+set completeopt=longest
+
+"macvim specific settings for mouse
+set mouse=a
+set mousemodel=extend 
+
+"tab shortcuts
+map     <C-T>      :tabnew <cr>
+map     <C-H>       :tabpre<CR>
+imap     <C-H>       <ESC>:tabpre<CR>
+map     <C-L>       :tabnext<CR>
+imap     <C-L>       <ESC>:tabnext<CR>
+map     <C-Q>       <ESC>:bd<CR>
+map     <C-W>       <C-W>W 
+map     <C-I>       :nohl<cr> 
+
+"MRU config 
+" set max lenght for the mru file list
+let g:fzf_mru_file_list_size = 10 " default value
+" set path pattens that should be ignored
+let g:fzf_mru_ignore_patterns = 'fugitive\|\.git/\|\_^/tmp/' " default value 
+
+"exclude search index in MRU
+let MRU_Exclude_Files = '\.list$\|\.index$\|\.si$\|\.tip$\|\.term$\|\.fugitiveblame$\|\.tmp'
+
+"customize MRU file
+let MRU_File = '/tmp/vim_mru_file_list.index'
+
+"show most recent files 
+map     <C-R>       :call ShowMostRecentFileList()<CR> 
+
+"swtiching among windows 
+nmap <S-h> :wincmd h<cr>
+nmap <S-l> :wincmd l<cr>
+nmap <S-j> :wincmd j<cr>
+nmap <S-k> :wincmd k<cr>
+
+"project setup
+map <C-P>  :call ShowProjectList() <cr> 
+"set current vim project directory 
+let $cur_vim_project_dir = "current"
+
