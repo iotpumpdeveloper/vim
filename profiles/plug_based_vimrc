@@ -63,7 +63,8 @@ function! SwitchToProject(regen_index)
     endif
 endfunction
 
-
+"try to disable GUI warnings
+set guioptions+=c
 
 "Custom plugin configuration 
 
