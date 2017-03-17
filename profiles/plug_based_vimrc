@@ -138,3 +138,5 @@ map <C-P>  :call ShowProjectList() <cr>
 "set current vim project directory 
 let $cur_vim_project_dir = "current"
 
+"auto complete bracket
+inoremap { {<CR>}<Esc>ko
