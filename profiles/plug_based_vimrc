@@ -23,9 +23,9 @@ endfunction
 function! OpenCurrentLineAsFile()
     let line = getline('.')
     if strlen(line) > 0 && line[0] != '#'
-        let filepath = line
+        let filepath = fnameescape(line)
         wincmd j
-        exec 'edit! '.expand(filepath)
+        exec 'edit! '.filepath
         e
     endif
 endfunction
