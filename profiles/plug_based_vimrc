@@ -14,6 +14,8 @@ function! Strip(input_string)
 endfunction
 
 function! ShowMostRecentFileList()
+     "make sure the window focus is on the rightmost 
+    wincmd l
     exec 'pedit! /tmp/vim_mru_file_list.index | wincmd k'
     map <ENTER> <esc>:silent call OpenCurrentLineAsFile()<cr>
 endfunction
