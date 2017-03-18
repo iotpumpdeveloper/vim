@@ -1,15 +1,29 @@
 "Plug initial config
 call plug#begin('~/.vim/plugged')
 
-Plug 'scrooloose/nerdtree'
+"file explorer
+Plug 'scrooloose/nerdtree' 
 
-Plug 'kern/vim-es7'
+"es6 syntax for js
+Plug 'kern/vim-es6'
 
+"most recent files
 Plug 'mru.vim'
 
+"syntax for .vue file
 Plug 'posva/vim-vue'
 
-Plug 'vim-scripts/comments.vim'
+"easy commmenting
+Plug 'vim-scripts/comments.vim'a
+
+"powerful javascritp code hinting and auto complete
+Plug 'Valloric/YouCompleteMe'
+
+"auto close pairs '',() 
+Plug 'jiangmiao/auto-pairs'
+
+"auto close html tags
+Plug 'alvan/vim-closetag'
 
 call plug#end()
 
@@ -145,6 +159,3 @@ nmap <S-k> :wincmd k<cr>
 map <C-P>  :call ShowProjectList() <cr> 
 "set current vim project directory 
 let $cur_vim_project_dir = "current"
-
-"auto complete bracket
-inoremap { {<CR>}<Esc>ko
