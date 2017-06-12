@@ -14,18 +14,24 @@ Plug 'mru.vim'
 Plug 'posva/vim-vue'
 
 "easy commmenting
-Plug 'vim-scripts/comments.vim'a
+Plug 'vim-scripts/comments.vim'
 
 "powerful javascritp code hinting and auto complete
 Plug 'Valloric/YouCompleteMe'
 
-"auto close pairs '',() 
-Plug 'jiangmiao/auto-pairs'
-
 "auto close html tags
 Plug 'alvan/vim-closetag'
+let g:closetag_filenames = "*.html,*.xhtml,*.phtml,*.vue"
+
 
 call plug#end()
+
+function! StripTrailingWhitespaces()
+    let l = line(".")
+    let c = col(".")
+    %s/\s\+$//e
+    call cursor(l, c)
+endfun
 
 function! Strip(input_string)
     return substitute(a:input_string, '^\s*\(.\{-}\)\s*$', '\1', '')
@@ -159,3 +165,11 @@ nmap <S-k> :wincmd k<cr>
 map <C-P>  :call ShowProjectList() <cr> 
 "set current vim project directory 
 let $cur_vim_project_dir = "current"
+
+"custom file type configuration
+au FileType javascript setl sw=2 sts=2 et
+au FileType css setl sw=2 sts=2 et
+au FileType vue setl sw=2 sts=2 et
+
+"trim trailing whitespace in the following files
+autocmd BufWritePre *.js,*.vue :call StripTrailingWhitespaces()
