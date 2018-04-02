@@ -87,6 +87,9 @@ function! SwitchToProject(regen_index)
     endif
 endfunction
 
+" display full path of an open file
+set statusline+=%F
+
 "try to disable GUI warnings
 set guioptions+=c
 
@@ -173,3 +176,6 @@ au FileType vue setl sw=2 sts=2 et
 
 "trim trailing whitespace in the following files
 autocmd BufWritePre *.js,*.vue :call StripTrailingWhitespaces()
+
+"set mjs file syntax highlighting
+autocmd BufNewFile,BufRead *.mjs   set syntax=javascript
