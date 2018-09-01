@@ -69,27 +69,33 @@ function! ShowProjectList()
 endfunction
 
 function! SwitchToProject(regen_index)
+  let $project_file_index = '~/.vim/projects/fileindex'
   let line = getline('.')
   let project_dir = ''
+  let project_file_extensions = ''
   if strlen(line) > 0 && line[0] != '#'
     let line_comps = split(line, "|")
     if len(line_comps) == 2
       let project_dir = Strip(line_comps[0])
       let project_file_extensions = Strip(line_comps[1])
+      if a:regen_index == 1
+        echom 'generating index'
+        exec 'cd '.project_dir 
+        call RegenerateFileIndex(project_file_extensions)
+      endif
     else
       let project_dir = Strip(line)
-      let project_file_extensions = "php" "if there is no file extension, default to php
     endif 
-    exec 'cd '.project_dir 
 
     "set the global variable for current project directory 
     let $cur_vim_project_dir = project_dir
-    let $project_file_index = '~/.vim/projects/fileindex'
-    if a:regen_index == 1
-      call RegenerateFileIndex(project_file_extensions)
-    endif
 
-    exec 'silent edit! '.$project_file_index
+    if len(project_file_extensions) == 0
+      "no extension is given, simply open the most recently open files
+      exec 'silent edit! /tmp/vim_mru_file_list.index'
+    else 
+      exec 'silent edit! '.$project_file_index
+    endif
     map <ENTER> <esc>:silent call OpenCurrentLineAsFile()<cr>
     NERDTree .
     wincmd w   "try to make sure that the focus is one the file index, not nerdtree
@@ -98,6 +104,7 @@ endfunction
 
 function! RegenerateFileIndex(project_file_extensions)
   let x = system('find . -type f -name "*.'.a:project_file_extensions.'" >'.$project_file_index)
+  echom 'find . -type f -name "*.'.a:project_file_extensions.'" >'.$project_file_index
 endfunction
 
 function! GetVisualSelection()
