@@ -121,6 +121,12 @@ endfunction
 " display full path of an open file
 set statusline+=%F
 
+"highlight all searches
+:set viminfo^=h
+
+"incremental search
+:set incsearch
+
 "try to disable GUI warnings
 set guioptions+=c
 
