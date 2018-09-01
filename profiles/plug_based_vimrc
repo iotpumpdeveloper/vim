@@ -114,8 +114,13 @@ endfunction
 function! FindPHPClass()
   let s:word = GetVisualSelection()
   let x = system('grep /'.s:word.'.php '.$project_file_index.' > tmp')
+  let result = system('cat tmp')
   exec 'pedit! tmp'
   wincmd k
+  if strlen(result) > 0 && len(split(result, "\n")) == 1 
+    call OpenCurrentLineAsFile() 
+    wincmd j
+  endif
 endfunction
 
 " display full path of an open file
