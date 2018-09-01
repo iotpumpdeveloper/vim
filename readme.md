@@ -11,5 +11,6 @@
 ### Find related class file
 ```
 move cursor under the target current word
-hit <ctrl> + o
+hit <ctrl> + o 
+or left mouse click
 ```
