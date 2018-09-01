@@ -86,7 +86,7 @@ function! SwitchToProject(regen_index)
     let $cur_vim_project_dir = project_dir
     let $project_file_index = '~/.vim/projects/fileindex'
     if a:regen_index == 1
-      call RegenerateFileIndex(project_file_extensions,project_dir)
+      call RegenerateFileIndex(project_file_extensions)
     endif
 
     exec 'silent edit! '.$project_file_index
@@ -96,8 +96,8 @@ function! SwitchToProject(regen_index)
   endif
 endfunction
 
-function! RegenerateFileIndex(project_file_extensions, project_dir)
-  let x = system('find '.a:project_dir.' -type f -name "*.'.a:project_file_extensions.'" >'.$project_file_index)
+function! RegenerateFileIndex(project_file_extensions)
+  let x = system('find . -type f -name "*.'.a:project_file_extensions.'" >'.$project_file_index)
 endfunction
 
 function! GetVisualSelection()
