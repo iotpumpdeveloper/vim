@@ -210,6 +210,9 @@ map <C-P>  :call ShowProjectList() <cr>
 "set current vim project directory 
 let $cur_vim_project_dir = "current"
 
+"go back to previous open file
+map <C-B> :e#<cr>
+
 "custom file type configuration
 au FileType javascript setl sw=2 sts=2 et
 au FileType css setl sw=2 sts=2 et
