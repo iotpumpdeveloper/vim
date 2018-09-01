@@ -106,7 +106,7 @@ endfunction
 
 function! FindPHPClass()
   let s:word = GetVisualSelection()
-  let x = system('grep '.s:word.'.php '.$project_file_index.' > tmp')
+  let x = system('grep /'.s:word.'.php '.$project_file_index.' > tmp')
   exec 'pedit! tmp'
   wincmd k
 endfunction
