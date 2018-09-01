@@ -23,9 +23,6 @@ Plug 'Valloric/YouCompleteMe'
 Plug 'alvan/vim-closetag'
 let g:closetag_filenames = "*.html,*.xhtml,*.phtml,*.vue"
 
-"fast, powerful debugger client for Vim
-Plug 'vim-vdebug/vdebug'
-
 call plug#end()
 
 function! StripTrailingWhitespaces()
@@ -95,7 +92,7 @@ endfunction
 
 function! FindPHPClass()
   let s:word = GetVisualSelection()
-  let x = system("find . -type f -name \"*.php\" | grep \/".s:word.".php > tmp")
+  let x = system("find . -type f -name \"".s:word.".php\" > tmp")
   exec 'pedit! tmp'
   wincmd k
 endfunction
