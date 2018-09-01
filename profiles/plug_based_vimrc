@@ -196,8 +196,11 @@ set autoread
 map     <C-R>       :call ShowMostRecentFileList()<CR> 
 
 "try to find php file
-map <C-O> :call FindPHPClass()<CR>
+au BufEnter *.php map <C-O> :call FindPHPClass()<CR>
+au BufEnter *.php nmap <LeftRelease> :call FindPHPClass()<CR>
 
+"in the tmp file, when click, open the current file
+au BufEnter tmp nmap <LeftRelease> :silent call OpenCurrentLineAsFile()<CR>
 
 "swtiching among windows 
 nmap <S-h> :wincmd h<cr>
