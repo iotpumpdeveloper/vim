@@ -85,6 +85,7 @@ function! SwitchToProject(regen_index)
       endif
     else
       let project_dir = Strip(line)
+      exec 'cd '.project_dir 
     endif 
 
     "set the global variable for current project directory 
