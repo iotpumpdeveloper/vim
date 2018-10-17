@@ -1,4 +1,4 @@
-"
+"A Plug Based Vim Profile
 
 "Plug initial config
 call plug#begin('~/.vim/plugged')
