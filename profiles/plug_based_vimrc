@@ -124,6 +124,9 @@ function! FindPHPClass()
   endif
 endfunction
 
+" set GUI font
+set guifont=Monaco:h12
+
 " display full path of an open file
 set statusline+=%F
 
