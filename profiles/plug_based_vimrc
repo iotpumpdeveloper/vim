@@ -29,49 +29,51 @@ Plug 'alvan/vim-closetag'
 let g:closetag_filenames = "*.html,*.xhtml,*.phtml,*.vue"
 
 "auto closing bracket pairs
-Plug 'jiangmiao/auto-pairs'
+"Plug 'jiangmiao/auto-pairs'
+Plug 'AutoClose'
+
 
 call plug#end()
 
 function! StripTrailingWhitespaces()
-    let l = line(".")
-    let c = col(".")
-    %s/\s\+$//e
-    call cursor(l, c)
+  let l = line(".")
+  let c = col(".")
+  %s/\s\+$//e
+  call cursor(l, c)
 endfun
 
 function! Strip(input_string)
-    return substitute(a:input_string, '^\s*\(.\{-}\)\s*$', '\1', '')
+  return substitute(a:input_string, '^\s*\(.\{-}\)\s*$', '\1', '')
 endfunction
 
 function! ShowMostRecentFileList()
-     "make sure the window focus is on the rightmost 
-    wincmd l
-    exec 'pedit! /tmp/vim_mru_file_list.index | wincmd k'
-    map <ENTER> <esc>:silent call OpenCurrentLineAsFile()<cr>
+  "make sure the window focus is on the rightmost 
+  wincmd l
+  exec 'pedit! /tmp/vim_mru_file_list.index | wincmd k'
+  map <ENTER> <esc>:silent call OpenCurrentLineAsFile()<cr>
 endfunction
 
 function! OpenCurrentLineAsFile()
-    let line = getline('.')
-    if strlen(line) > 0 && line[0] != '#'
-        let filepath = fnameescape(line)
-        wincmd j
-        exec 'edit! '.filepath
-        e
-    endif
+  let line = getline('.')
+  if strlen(line) > 0 && line[0] != '#'
+    let filepath = fnameescape(line)
+    wincmd j
+    exec 'edit! '.filepath
+    e
+  endif
 endfunction
 
 function! ShowProjectList()
-    "make sure the window focus is on the rightmost 
-    wincmd l
-    au BufLeave *.list nmap r r
-    pedit! ~/.vim/projects/project.list
-    "map enter key to just switch to project, will not regenerate file index, 0 means no regenerate
-    "but we always should regenerate the index
-    nmap <ENTER> <esc>:call SwitchToProject(1)<cr>  
-    "map r key in normal mode to regenerate file index and switch to project, 1 means regenerate
-    nmap r <esc>:call SwitchToProject(1)<cr> 
-    wincmd k
+  "make sure the window focus is on the rightmost 
+  wincmd l
+  au BufLeave *.list nmap r r
+  pedit! ~/.vim/projects/project.list
+  "map enter key to just switch to project, will not regenerate file index, 0 means no regenerate
+  "but we always should regenerate the index
+  nmap <ENTER> <esc>:call SwitchToProject(1)<cr>  
+  "map r key in normal mode to regenerate file index and switch to project, 1 means regenerate
+  nmap r <esc>:call SwitchToProject(1)<cr> 
+  wincmd k
 endfunction
 
 function! SwitchToProject(regen_index)
@@ -119,15 +121,33 @@ function! GetVisualSelection()
 endfunction
 
 function! FindPHPClass()
+  let $php_class_list = '~/.vim/projects/php_class_list'
   let s:word = GetVisualSelection()
-  let x = system('grep /'.s:word.'.php '.$project_file_index.' > tmp')
-  let result = system('cat tmp')
-  exec 'pedit! tmp'
+  let x = system('grep /'.s:word.'.php '.$project_file_index.' > '.$php_class_list)
+  let result = system('cat '.$php_class_list)
+  exec 'pedit! '.$php_class_list
   wincmd k
   if strlen(result) > 0 && len(split(result, "\n")) == 1 
     call OpenCurrentLineAsFile() 
     wincmd j
   endif
+endfunction
+
+function! PhanbugDebugPHPFile()
+  "close possible previous debugging window
+  let numOfBuffers = len(getbufinfo({'buflisted':1}))
+  if numOfBuffers > 2
+    "we have more than 2 buffers, close the one below
+    wincmd j
+    bd
+  endif
+  let l = line(".")
+  let cmd = '~/phanbug/phanbug --cmd "sh ~/tmp.sh" --action inspect --file '.expand('%:p').' --line '.l.' --depth 4 > ~/phanbug.output'
+  let result = system(cmd)
+  split
+  wincmd j
+  exec 'edit! ~/phanbug.output'
+  wincmd k
 endfunction
 
 " set GUI font
@@ -178,6 +198,9 @@ set lbr
 "longest auto complete
 set completeopt=longest
 
+"jump to the end of line with ctrl+e in insert mode
+inoremap <C-e> <C-o>$
+
 "macvim specific settings for mouse
 set mouse=a
 set mousemodel=extend 
@@ -212,6 +235,10 @@ map     <C-R>       :call ShowMostRecentFileList()<CR>
 
 "try to find php file
 au BufEnter *.php map <C-O> :call FindPHPClass()<CR>
+
+"use phanbug to debug php
+au BufEnter *.php map <C-D> :call PhanbugDebugPHPFile()<CR>
+
 "au BufEnter *.php nmap <LeftRelease> :call FindPHPClass()<CR>
 
 "in the tmp file, when click, open the current file
