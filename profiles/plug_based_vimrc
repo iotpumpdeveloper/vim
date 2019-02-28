@@ -142,7 +142,7 @@ function! PhanbugDebugPHPFile()
     bd
   endif
   let l = line(".")
-  let cmd = '~/phanbug/phanbug --cmd "sh ~/tmp.sh" --action inspect --file '.expand('%:p').' --line '.l.' --depth 4 > ~/phanbug.output'
+  let cmd = '~/phanbug/phanbug --cmd "sh ~/tmp.sh" --action inspect --file '.expand('%:p').' --line '.l.' --depth 4 --hardbreak 1 > ~/phanbug.output'
   let result = system(cmd)
   split
   wincmd j
