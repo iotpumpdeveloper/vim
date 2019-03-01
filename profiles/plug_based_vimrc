@@ -141,12 +141,12 @@ function! PhanbugDebugPHPFile()
     wincmd j
     bd
   endif
-  let possibleVariable = expand('<cword>')
+  let possibleVariable = @* "inspect the visual selection first
   let l = line(".")
-  if strlen(possibleVariable) > 0
-    let cmd = '~/phanbug/phanbug --cmd "sh ~/tmp.sh" --action inspect --file '.expand('%:p').' --line '.l.' --depth 4 --hardbreak 1 --variable '.possibleVariable.'> ~/phanbug.output'
+  if strlen(possibleVariable) > 0 && possibleVariable != '{'
+    let cmd = '~/phanbug/phanbug --cmd "sh ~/tmp.sh" --action inspect --file '.expand('%:p').' --line '.l.' --depth 4 --hardbreak 1 --variable '''.possibleVariable.'''> ~/phanbug.output'
     let result = system(cmd)
-  else
+  else 
     let cmd = '~/phanbug/phanbug --cmd "sh ~/tmp.sh" --action inspect --file '.expand('%:p').' --line '.l.' --depth 4 --hardbreak 1 > ~/phanbug.output'
     let result = system(cmd)
   endif 
