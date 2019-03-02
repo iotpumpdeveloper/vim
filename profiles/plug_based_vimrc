@@ -171,6 +171,8 @@ function! PhanbugOpenResultInBuffer(result)
   "append the result
   call append(0, split(a:result, '\v\n'))
   normal! gg
+  "back to the current buffer
+  wincmd h
 endfunction
 
 function! PhanbugDebugPHPFile()
