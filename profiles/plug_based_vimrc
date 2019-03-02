@@ -116,13 +116,36 @@ function! RegenerateFileIndex(project_file_extensions)
   echom 'find . -type f -name "*.'.a:project_file_extensions.'" >'.$project_file_index
 endfunction
 
-function! GetVisualSelection()
-  return expand('<cword>')
+
+function! GotoBuffer(bufname)
+	let bufmap = map(range(1, winnr('$')), '[bufname(winbufnr(v:val)), v:val]')
+	let thewindow = filter(bufmap, 'v:val[0] =~ a:bufname')[0][1]
+	execute thewindow 'wincmd w'
 endfunction
+
+function! GetVisualSelection()
+  try
+    let a_save = @a
+    normal! gv"ay
+    return @a
+  finally
+    let @a = a_save
+  endtry
+endfunction
+
+function! ProcessFileChangedShell() 
+  if v:fcs_reason == 'mode' || v:fcs_reason == 'time' 
+    let v:fcs_choice = '' 
+  else 
+    let v:fcs_choice = 'ask' 
+  endif 
+endfunction 
+
+autocmd FileChangedShell <buffer> call ProcessFileChangedShell() 
 
 function! FindPHPClass()
   let $php_class_list = '~/.vim/projects/php_class_list'
-  let s:word = GetVisualSelection()
+  let s:word = expand('<cword>')
   let x = system('grep /'.s:word.'.php '.$project_file_index.' > '.$php_class_list)
   let result = system('cat '.$php_class_list)
   exec 'pedit! '.$php_class_list
@@ -133,27 +156,39 @@ function! FindPHPClass()
   endif
 endfunction
 
-function! PhanbugDebugPHPFile()
-  "close possible previous debugging window
-  let numOfBuffers = len(getbufinfo({'buflisted':1}))
-  if numOfBuffers > 2
-    "we have more than 2 buffers, close the one below
+function! PhanbugOpenResultInBuffer(result)
+  "split a dedicated buffer
+  if bufwinnr('__PHANBUG_DEBUG_BUFFER__') < 0
+    set splitright
+    vsplit __PHANBUG_DEBUG_BUFFER__
     wincmd j
-    bd
   endif
-  let possibleVariable = @@ "inspect the visual selection first
+  call GotoBuffer('__PHANBUG_DEBUG_BUFFER__')
+  "clean things up
+  normal! ggdG
+  setlocal filetype=phanbugoutput
+  setlocal buftype=nofile
+  "append the result
+  call append(0, split(a:result, '\v\n'))
+  normal! gg
+endfunction
+
+function! PhanbugDebugPHPFile()
+  "let possibleVariable = GetVisualSelection() "inspect the visual selection first
+  "let possibleVariable = expand('<cword>')
+  "echom strlen(@a)
+  "normal! gv"ay
+  let possibleVariable = @@
   let l = line(".")
   if strlen(possibleVariable) > 0 && possibleVariable != '{'
-    let cmd = '~/phanbug/phanbug --cmd "sh ~/tmp.sh" --action inspect --file '.expand('%:p').' --line '.l.' --depth 4 --hardbreak 1 --variable '''.possibleVariable.'''> ~/phanbug.output'
+    let cmd = '~/phanbug/phanbug --cmd "sh ~/tmp.sh" --action inspect --file '.expand('%:p').' --line '.l.' --depth 4 --hardbreak 1 --variable '''.possibleVariable.''''
     let result = system(cmd)
+    call PhanbugOpenResultInBuffer(result)
   else 
-    let cmd = '~/phanbug/phanbug --cmd "sh ~/tmp.sh" --action inspect --file '.expand('%:p').' --line '.l.' --depth 4 --hardbreak 1 > ~/phanbug.output'
+    let cmd = '~/phanbug/phanbug --cmd "sh ~/tmp.sh" --action inspect --file '.expand('%:p').' --line '.l.' --depth 4 --hardbreak 1 >'
     let result = system(cmd)
-  endif 
-  split
-  wincmd j
-  exec 'edit! ~/phanbug.output'
-  wincmd k
+    call PhanbugOpenResultInBuffer(result)
+  endif
 endfunction
 
 " set GUI font
