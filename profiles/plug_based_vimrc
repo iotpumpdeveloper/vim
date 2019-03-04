@@ -180,29 +180,39 @@ function! PhanbugDebugPHPFile()
   "let possibleVariable = expand('<cword>')
   "echom strlen(@a)
   "normal! gv"ay
-  let possibleVariable = @@
+  "first, see if there is variable in register 0, the most yanked text
+  let possibleVariable = @0
+  if strlen(possibleVariable) == 0
+    "get from the current cursor
+    let possibleVariable = expand('<cword>')
+  endif
+  "clear register
+  call setreg(0, [])
   let l = line(".")
+  let cmd = ''
   if strlen(possibleVariable) > 0 && possibleVariable != '{'
-    "see if the debug window is open or not
-    let debugWindowIsOpen = 0
-    for bufNr in range(1, bufnr('$'))
-      if expand("#".bufNr.":p") =~ 'phanbug.output$'
-        let debugWindowIsOpen = 1
-        break
-      endif
-    endfor
     let cmd = '~/phanbug/phanbug --cmd "sh ~/tmp.sh" --action inspect --file '.expand('%:p').' --line '.l.' --depth 4 --hardbreak 1 --variable '''.possibleVariable.''' > ~/phanbug.output'
-    let result = system(cmd)
-    if debugWindowIsOpen == 0
-      botright vs ~/phanbug.output
-      "back to current window
-      wincmd h
-    else
-      wincmd l
-      e ~/phanbug.output
-      "back to current window
-      wincmd h
+  else
+    let cmd = '~/phanbug/phanbug --cmd "sh ~/tmp.sh" --action inspect --file '.expand('%:p').' --line '.l.' --depth 4 --hardbreak 1 > ~/phanbug.output'
+  endif
+  "see if the debug window is open or not
+  let debugWindowIsOpen = 0
+  for bufNr in range(1, bufnr('$'))
+    if expand("#".bufNr.":p") =~ 'phanbug.output$'
+      let debugWindowIsOpen = 1
+      break
     endif
+  endfor
+  let result = system(cmd)
+  if debugWindowIsOpen == 0
+    botright vs ~/phanbug.output
+    "back to current window
+    wincmd h
+  else
+    wincmd l
+    e ~/phanbug.output
+    "back to current window
+    wincmd h
   endif
 endfunction
 
