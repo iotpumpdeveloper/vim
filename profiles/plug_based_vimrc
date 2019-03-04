@@ -120,7 +120,7 @@ endfunction
 function! GotoBuffer(bufname)
 	let bufmap = map(range(1, winnr('$')), '[bufname(winbufnr(v:val)), v:val]')
 	let thewindow = filter(bufmap, 'v:val[0] =~ a:bufname')[0][1]
-	execute thewindow 'wincmd w'
+	"execute thewindow 'wincmd w'
 endfunction
 
 function! GetVisualSelection()
@@ -161,7 +161,7 @@ function! PhanbugOpenResultInBuffer(result)
   if bufwinnr('__PHANBUG_DEBUG_BUFFER__') < 0
     set splitright
     vsplit __PHANBUG_DEBUG_BUFFER__
-    wincmd j
+    wincmd l
   endif
   call GotoBuffer('__PHANBUG_DEBUG_BUFFER__')
   "clean things up
@@ -172,7 +172,7 @@ function! PhanbugOpenResultInBuffer(result)
   call append(0, split(a:result, '\v\n'))
   normal! gg
   "back to the current buffer
-  wincmd h
+  "wincmd h
 endfunction
 
 function! PhanbugDebugPHPFile()
@@ -183,13 +183,20 @@ function! PhanbugDebugPHPFile()
   let possibleVariable = @@
   let l = line(".")
   if strlen(possibleVariable) > 0 && possibleVariable != '{'
-    let cmd = '~/phanbug/phanbug --cmd "sh ~/tmp.sh" --action inspect --file '.expand('%:p').' --line '.l.' --depth 4 --hardbreak 1 --variable '''.possibleVariable.''''
+    let numOfBuffers = len(getbufinfo({'buflisted':1}))
+    echom numOfBuffers
+    let cmd = '~/phanbug/phanbug --cmd "sh ~/tmp.sh" --action inspect --file '.expand('%:p').' --line '.l.' --depth 4 --hardbreak 1 --variable '''.possibleVariable.''' > ~/phanbug.output'
     let result = system(cmd)
-    call PhanbugOpenResultInBuffer(result)
-  else 
-    let cmd = '~/phanbug/phanbug --cmd "sh ~/tmp.sh" --action inspect --file '.expand('%:p').' --line '.l.' --depth 4 --hardbreak 1 >'
-    let result = system(cmd)
-    call PhanbugOpenResultInBuffer(result)
+    if numOfBuffers == 2
+      botright vs ~/phanbug.output
+      "back to current window
+      wincmd h
+    else
+      wincmd l
+      e ~/phanbug.output
+      "back to current window
+      wincmd h
+    endif
   endif
 endfunction
 
