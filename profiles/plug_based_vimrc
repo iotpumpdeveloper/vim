@@ -183,6 +183,7 @@ function! PhanbugDebugPHPFile()
   let possibleVariable = @@
   let l = line(".")
   if strlen(possibleVariable) > 0 && possibleVariable != '{'
+    "see if the debug window is open or not
     let debugWindowIsOpen = 0
     for bufNr in range(1, bufnr('$'))
       if expand("#".bufNr.":p") =~ 'phanbug.output$'
@@ -192,7 +193,6 @@ function! PhanbugDebugPHPFile()
     endfor
     let cmd = '~/phanbug/phanbug --cmd "sh ~/tmp.sh" --action inspect --file '.expand('%:p').' --line '.l.' --depth 4 --hardbreak 1 --variable '''.possibleVariable.''' > ~/phanbug.output'
     let result = system(cmd)
-    echom debugWindowIsOpen
     if debugWindowIsOpen == 0
       botright vs ~/phanbug.output
       "back to current window
