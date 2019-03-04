@@ -59,7 +59,7 @@ function! OpenCurrentLineAsFile()
     let filepath = fnameescape(line)
     wincmd j
     exec 'edit! '.filepath
-    e
+    "e
   endif
 endfunction
 
@@ -176,10 +176,6 @@ function! PhanbugOpenResultInBuffer(result)
 endfunction
 
 function! PhanbugDebugPHPFile()
-  "let possibleVariable = GetVisualSelection() "inspect the visual selection first
-  "let possibleVariable = expand('<cword>')
-  "echom strlen(@a)
-  "normal! gv"ay
   "first, see if there is variable in register 0, the most yanked text
   let possibleVariable = @0
   if strlen(possibleVariable) == 0
@@ -197,7 +193,7 @@ function! PhanbugDebugPHPFile()
   endif
   "see if the debug window is open or not
   let debugWindowIsOpen = 0
-  for winNr in range(1, winnr('$'))
+  for winNr in range(0, winnr('$'))
     if expand("#".winNr.":p") =~ 'phanbug.output$'
       let debugWindowIsOpen = 1
       break
