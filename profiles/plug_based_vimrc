@@ -197,8 +197,8 @@ function! PhanbugDebugPHPFile()
   endif
   "see if the debug window is open or not
   let debugWindowIsOpen = 0
-  for bufNr in range(1, bufnr('$'))
-    if expand("#".bufNr.":p") =~ 'phanbug.output$'
+  for winNr in range(1, winnr('$'))
+    if expand("#".winNr.":p") =~ 'phanbug.output$'
       let debugWindowIsOpen = 1
       break
     endif
