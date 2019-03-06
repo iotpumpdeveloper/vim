@@ -53,6 +53,22 @@ function! ShowMostRecentFileList()
   map <ENTER> <esc>:silent call OpenCurrentLineAsFile()<cr>
 endfunction
 
+function! PHPIDE_SETUP()
+  "set up shortcuts and mappings so we will have an ide setup for php
+
+  "try to find php file
+  map <C-O> :call FindPHPClass()<CR>
+
+  "use phanbug to debug php
+  map <C-D> :call PhanbugDebugPHPFile()<CR>
+
+  "clear the register @0
+  call setreg(0, [])
+
+  "trim all whitespaces
+  call StripTrailingWhitespaces()
+endfunction
+
 function! OpenCurrentLineAsFile()
   let line = getline('.')
   if strlen(line) > 0 && line[0] != '#'
@@ -118,9 +134,9 @@ endfunction
 
 
 function! GotoBuffer(bufname)
-	let bufmap = map(range(1, winnr('$')), '[bufname(winbufnr(v:val)), v:val]')
-	let thewindow = filter(bufmap, 'v:val[0] =~ a:bufname')[0][1]
-	"execute thewindow 'wincmd w'
+  let bufmap = map(range(1, winnr('$')), '[bufname(winbufnr(v:val)), v:val]')
+  let thewindow = filter(bufmap, 'v:val[0] =~ a:bufname')[0][1]
+  "execute thewindow 'wincmd w'
 endfunction
 
 function! GetVisualSelection()
@@ -301,11 +317,8 @@ set noerrorbells visualbell t_vb=
 "show most recent files 
 map     <C-R>       :call ShowMostRecentFileList()<CR> 
 
-"try to find php file
-au BufEnter *.php map <C-O> :call FindPHPClass()<CR>
-
-"use phanbug to debug php
-au BufEnter *.php map <C-D> :call PhanbugDebugPHPFile()<CR>
+"set up php
+au BufEnter *.php :call PHPIDE_SETUP()
 
 "au BufEnter *.php nmap <LeftRelease> :call FindPHPClass()<CR>
 
@@ -333,7 +346,7 @@ au FileType vue setl sw=2 sts=2 et
 au FileType php setl sw=4 sts=4 et
 
 "trim trailing whitespace in the following files
-autocmd BufWritePre *.js,*.vue,*.php :call StripTrailingWhitespaces()
+autocmd BufWritePre *.js,*.vue :call StripTrailingWhitespaces()
 
 "set mjs file syntax highlighting
 autocmd BufNewFile,BufRead *.mjs   set syntax=javascript
