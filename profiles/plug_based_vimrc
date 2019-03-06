@@ -175,6 +175,19 @@ function! PhanbugOpenResultInBuffer(result)
   "wincmd h
 endfunction
 
+function! PhanbugOpenCurrentLineAsFile()
+  let line = getline('.')
+  let line_comps = split(line, " ")
+  let possibleFile = line_comps[1]
+  let comps = split(possibleFile, "(")
+  let file = comps[0]
+  let line = substitute(comps[1],"\(","","g")
+  let filepath = fnameescape(file)
+  wincmd j
+  exec 'edit! '.filepath
+  cal cursor(line, 1)
+endfunction
+
 function! PhanbugDebugPHPFile()
   "first, see if there is variable in register 0, the most yanked text
   let possibleVariable = @0
@@ -193,6 +206,8 @@ function! PhanbugDebugPHPFile()
   endif
   let result=system(cmd)
   pedit ~/phanbug.output
+  wincmd k
+  map <ENTER> <esc>:silent call PhanbugOpenCurrentLineAsFile()<cr>
 endfunction
 
 " set GUI font
