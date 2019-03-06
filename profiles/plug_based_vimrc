@@ -195,6 +195,13 @@ function! PhanbugOpenCurrentLineAsFile()
   let line = getline('.')
   let line_comps = split(line, " ")
   if len(line_comps) < 2
+    let possibleFile = line_comps[0]
+    let fileLength = strlen(possibleFile)
+    if possibleFile[fileLength - 4:fileLength] == '.php'
+      let filepath = fnameescape(possibleFile)
+      wincmd j
+      exec 'edit! '.filepath
+    endif
     return
   endif
   let possibleFile = line_comps[1]
@@ -343,6 +350,7 @@ map <C-B> :e#<cr>
 au FileType javascript setl sw=2 sts=2 et
 au FileType css setl sw=2 sts=2 et
 au FileType vue setl sw=2 sts=2 et
+"set tabs and spaces for php
 au FileType php setl sw=4 sts=4 et
 
 "trim trailing whitespace in the following files
