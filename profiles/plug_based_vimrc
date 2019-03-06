@@ -178,8 +178,14 @@ endfunction
 function! PhanbugOpenCurrentLineAsFile()
   let line = getline('.')
   let line_comps = split(line, " ")
+  if len(line_comps) < 2
+    return
+  endif
   let possibleFile = line_comps[1]
   let comps = split(possibleFile, "(")
+  if len(comps) < 2
+    return
+  endif 
   let file = comps[0]
   let line = substitute(comps[1],"\(","","g")
   let filepath = fnameescape(file)
