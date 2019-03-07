@@ -14,7 +14,7 @@ $cmd = "find $targetDirectory -type f -name \"*.php\" -not -path \"*.git*\"";
 $output = shell_exec($cmd);
 $fileList = explode("\n", trim($output));
 $functionFinder = '/function[\s\n]+(\S+)[\s\n]*\(/';
-$classFinder = '/(class|interface)[\s\n](.*)([\s\n]*){/';
+$classFinder = '/(class|interface|trait)[\s\n](.*)([\s\n]*){/';
 $functionsHash = [];
 $classesHash = [];
 foreach($fileList as $file) {

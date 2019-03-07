@@ -1,0 +1,18 @@
+#!/usr/bin/env php
+<?php
+if ($argc !== 2) {
+    die('missing class name');
+}
+
+$classesHash = json_decode(file_get_contents(__DIR__."/../projects/php_class_list"), true);
+$className = $argv[1];
+
+$output = "";
+if (isset($classesHash[$className])) {
+    $offset = 0;
+    foreach($classesHash[$className] as $classInfo) {
+        $offset ++;
+        $output .= "$offset {$classInfo[0]}($classInfo[1]) $className\n";
+    }
+}
+print $output;
