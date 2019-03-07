@@ -114,15 +114,14 @@ function! SwitchToProject(regen_index)
       if a:regen_index == 1
         echom 'generating index'
         exec 'cd '.project_dir 
+        "set the global variable for current project directory 
+        let $cur_vim_project_dir = project_dir
         call RegenerateFileIndex(project_file_extensions)
       endif
     else
       let project_dir = Strip(line)
       exec 'cd '.project_dir 
     endif 
-
-    "set the global variable for current project directory 
-    let $cur_vim_project_dir = project_dir
 
     if len(project_file_extensions) == 0
       "no extension is given, simply open the most recently open files
@@ -138,8 +137,9 @@ endfunction
 
 function! RegenerateFileIndex(project_file_extensions)
   echom "Generating project related indexes..."
-  let x = system('find . -type f -name "*.'.a:project_file_extensions.'" >'.$project_file_index)
-  let y = system('~/.vim/scripts/generate_project_functions_index '.$cur_vim_project_dir)
+  let cmd1 = 'find . -type f -name "*.'.a:project_file_extensions.'" >'.$project_file_index
+  let cmd2 = '~/.vim/scripts/generate_project_functions_index '.$cur_vim_project_dir
+  let x = system(cmd1.';'.cmd2)
 endfunction
 
 
@@ -173,27 +173,27 @@ function! FindPHPClassAndFunction()
   let result_list = '~/.vim/tmp/php_ide_class_function_search_result'
   let s:word = expand('<cword>')
   let curPos = getcurpos()[2]
- 
+
   let line = getline('.')
   let endPos = strlen(line) - 1
- 
+
   let i = curPos
   let wordIsAFunction = 0
   while i <= endPos
-      if line[i] == '('
-          if line[i - strlen(s:word):i] == s:word.'('
-            let wordIsAFunction = 1
-            break
-          endif
+    if line[i] == '('
+      if line[i - strlen(s:word):i] == s:word.'('
+        let wordIsAFunction = 1
+        break
       endif
-      let i += 1
+    endif
+    let i += 1
   endwhile
 
   let cmd = ''
   if wordIsAFunction == 1
-      let cmd = '~/.vim/scripts/find_function_in_project '.s:word.' > '.result_list
+    let cmd = '~/.vim/scripts/find_function_in_project '.s:word.' > '.result_list
   else
-      let cmd = 'grep /'.s:word.'.php '.$project_file_index.' > '.result_list
+    let cmd = 'grep /'.s:word.'.php '.$project_file_index.' > '.result_list
   endif
 
   let x = system(cmd)
