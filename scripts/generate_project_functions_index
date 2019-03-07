@@ -20,7 +20,9 @@ foreach($fileList as $file) {
         $matches = $matches[1];
         foreach($matches as $match) {
             $functionName = $match[0];
-            $lineNumber = $match[1];
+            $charPos = $match[1];
+            list($before) = str_split($content, $charPos);
+            $lineNumber = strlen($before) - strlen(str_replace("\n", "", $before)) + 1;
             //exclude constructor
             if (!in_array($functionName, ['__construct'])) {
                 $functionsHash[$functionName][] = [$file, $lineNumber];

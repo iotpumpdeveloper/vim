@@ -9,8 +9,10 @@ $functionName = $argv[1];
 
 $output = "";
 if (isset($functionsHash[$functionName])) {
+    $offset = 0;
     foreach($functionsHash[$functionName] as $functionInfo) {
-        $output .= "{$functionInfo[0]}($functionInfo[1])\n";
+        $offset ++;
+        $output .= "$offset {$functionInfo[0]}($functionInfo[1]) $functionName\n";
     }
 }
 print $output;
