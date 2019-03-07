@@ -138,7 +138,7 @@ endfunction
 function! RegenerateFileIndex(project_file_extensions)
   echom "Generating project related indexes..."
   let cmd1 = 'find . -type f -name "*.'.a:project_file_extensions.'" >'.$project_file_index
-  let cmd2 = '~/.vim/scripts/generate_project_functions_index '.$cur_vim_project_dir
+  let cmd2 = '~/.vim/scripts/generate_project_code_index '.$cur_vim_project_dir
   let x = system(cmd1.';'.cmd2)
 endfunction
 
@@ -193,7 +193,7 @@ function! FindPHPClassAndFunction()
   if wordIsAFunction == 1
     let cmd = '~/.vim/scripts/find_function_in_project '.s:word.' > '.result_list
   else
-    let cmd = 'grep /'.s:word.'.php '.$project_file_index.' > '.result_list
+    let cmd = '~/.vim/scripts/find_class_in_project '.s:word.' > '.result_list
   endif
 
   let x = system(cmd)
