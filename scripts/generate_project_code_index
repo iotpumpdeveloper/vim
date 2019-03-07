@@ -1,5 +1,8 @@
 #!/usr/bin/env php
 <?php
+/**
+ * generate the project code index, including function and class index
+ */
 if ($argc !== 2) {
     die('missing target directories');
 }
@@ -11,10 +14,12 @@ $cmd = "find $targetDirectory -type f -name \"*.php\" -not -path \"*.git*\"";
 $output = shell_exec($cmd);
 $fileList = explode("\n", trim($output));
 $functionFinder = '/function[\s\n]+(\S+)[\s\n]*\(/';
+$classFinder = '/(class|interface)[\s\n](.*)([\s\n]*){/';
 $functionsHash = [];
+$classesHash = [];
 foreach($fileList as $file) {
     $content = file_get_contents($file);
-    # Apply the Regular Expression to the PHP File Contents
+    # Find all php functions
     preg_match_all( $functionFinder , $content , $matches, \PREG_OFFSET_CAPTURE);
     if (count($matches) > 1) {
         $matches = $matches[1];
@@ -29,6 +34,21 @@ foreach($fileList as $file) {
             }
         }
     }
+
+    # Find all php classes
+    preg_match_all( $classFinder, $content , $matches, \PREG_OFFSET_CAPTURE);
+    if (count($matches) > 1) {
+      $matches = $matches[1];
+      foreach($matches as $match) {
+        $charPos = $match[1];
+        $lineNumber = count(explode("\n", substr($content, 0, $charPos)));
+        $className = @trim(explode(" ", explode("\n", substr($content, $charPos, strlen($content)))[0])[1]);
+        if (strlen($className) > 0) {
+          $classesHash[$className][] = [$file, $lineNumber];
+        }
+      }
+    }
 }
 
 file_put_contents(__DIR__."/../projects/php_function_list", json_encode($functionsHash));
+file_put_contents(__DIR__."/../projects/php_class_list", json_encode($classesHash));
