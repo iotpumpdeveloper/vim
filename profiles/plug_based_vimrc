@@ -159,6 +159,17 @@ function! GetVisualSelection()
     endtry
 endfunction
 
+function! GoBackToRecentBuffer()
+  let startName = bufname('%')
+  while 1
+    exe "normal! \<c-o>"
+    let nowName = bufname('%')
+    if nowName != startName
+      break
+    endif
+  endwhile
+endfunction
+
 function! ProcessFileChangedShell() 
     if v:fcs_reason == 'mode' || v:fcs_reason == 'time' 
         let v:fcs_choice = '' 
@@ -378,7 +389,7 @@ map <C-P>  :call ShowProjectList() <cr>
 let $cur_vim_project_dir = "current"
 
 "go back to previous open file
-map <C-B> :e#<cr>
+map <C-B> :call GoBackToRecentBuffer()<cr>
 
 "custom file type configuration
 au FileType javascript setl sw=2 sts=2 et

@@ -14,7 +14,11 @@ $cmd = "find $targetDirectory -type f -name \"*.php\" -not -path \"*.git*\"";
 $output = shell_exec($cmd);
 $fileList = explode("\n", trim($output));
 $functionFinder = '/function[\s\n]+(\S+)[\s\n]*\(/';
-$classFinders = ['/class[\s\n]+(.*)[\s\n]*{/', '/interface[\s\n]+(.*)[\s\n]*{/', '/trait[\s\n]+(.*)[\s\n]*{/'];
+$classFinders = [
+    '/class[\s\n]+(.*)[a-zA-Z0-9,\s\n]*{/', 
+    '/interface[\s\n]+(.*)[\s\n]*{/', 
+    '/trait[\s\n]+(.*)[\s\n]*{/'
+];
 $functionsHash = [];
 $classesHash = [];
 foreach($fileList as $file) {
@@ -22,17 +26,17 @@ foreach($fileList as $file) {
     # Find all php functions
     preg_match_all( $functionFinder , $content , $matches, \PREG_OFFSET_CAPTURE);
     if (count($matches) > 1) {
-        $matches = $matches[1];
-        foreach($matches as $match) {
-            $functionName = $match[0];
-            $charPos = $match[1];
-            list($before) = str_split($content, $charPos);
-            $lineNumber = strlen($before) - strlen(str_replace("\n", "", $before)) + 1;
-            //exclude constructor
-            if (!in_array($functionName, ['__construct'])) {
-                $functionsHash[$functionName][] = [$file, $lineNumber];
-            }
+      $matches = $matches[1];
+      foreach($matches as $match) {
+        $functionName = $match[0];
+        $charPos = $match[1];
+        list($before) = str_split($content, $charPos);
+        $lineNumber = strlen($before) - strlen(str_replace("\n", "", $before)) + 1;
+        //exclude constructor
+        if (!in_array($functionName, ['__construct'])) {
+          $functionsHash[$functionName][] = [$file, $lineNumber];
         }
+      }
     }
 
     # Find all php classes
