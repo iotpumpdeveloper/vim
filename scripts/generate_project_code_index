@@ -14,7 +14,7 @@ $cmd = "find $targetDirectory -type f -name \"*.php\" -not -path \"*.git*\"";
 $output = shell_exec($cmd);
 $fileList = explode("\n", trim($output));
 $functionFinder = '/function[\s\n]+(\S+)[\s\n]*\(/';
-$classFinder = '/(class|interface|trait)[\s\n](.*)([\s\n]*){/';
+$classFinders = ['/class[\s\n]+(.*)[\s\n]*{/', '/interface[\s\n]+(.*)[\s\n]*{/', '/trait[\s\n]+(.*)[\s\n]*{/'];
 $functionsHash = [];
 $classesHash = [];
 foreach($fileList as $file) {
@@ -36,14 +36,15 @@ foreach($fileList as $file) {
     }
 
     # Find all php classes
-    preg_match_all( $classFinder, $content , $matches, \PREG_OFFSET_CAPTURE);
-    if (count($matches) > 1) {
-      $matches = $matches[1];
-      foreach($matches as $match) {
-        $charPos = $match[1];
-        $lineNumber = count(explode("\n", substr($content, 0, $charPos)));
-        $className = @trim(explode(" ", explode("\n", substr($content, $charPos, strlen($content)))[0])[1]);
-        if (strlen($className) > 0) {
+    foreach($classFinders as $classFinder) {
+      preg_match_all( $classFinder, $content , $matches, \PREG_OFFSET_CAPTURE);
+      if (count($matches) > 1) {
+        $matches = $matches[1];
+        foreach($matches as $match) {
+          $chunk = $match[0];
+          $charPos = $match[1];
+          $className = explode(" ", $chunk)[0];
+          $lineNumber = count(explode("\n", substr($content, 0, $charPos)));
           $classesHash[$className][] = [$file, $lineNumber];
         }
       }
