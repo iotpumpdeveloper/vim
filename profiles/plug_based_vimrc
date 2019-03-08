@@ -201,7 +201,6 @@ function! FindPHPClassAndFunction()
   exec 'pedit! '.result_list
   wincmd k
   map <ENTER> <esc>:silent call PhanbugOpenCurrentLineAsFile()<cr>
-  wincmd j
 endfunction
 
 function! PhanbugOpenResultInBuffer(result)
