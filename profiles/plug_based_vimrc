@@ -143,7 +143,7 @@ endfunction
 
 function! RegenerateFileIndex(project_file_extensions)
   echom "Generating project related indexes..."
-  let cmd1 = 'find . -type f -name "*.'.a:project_file_extensions.'" >'.$project_file_index
+  let cmd1 = 'find $(pwd) -type f -name "*.'.a:project_file_extensions.'" >'.$project_file_index
   let cmd2 = '~/.vim/scripts/generate_project_code_index '.$cur_vim_project_dir
   let x = system(cmd1.';'.cmd2)
   let g:openFiles = []
