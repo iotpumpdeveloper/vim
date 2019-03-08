@@ -135,7 +135,7 @@ function! SwitchToProject(regen_index)
     wincmd j
     bd
     wincmd k
-    map <ENTER> <esc>:silent call PhanbugOpenCurrentLineAsFile()<cr>
+    map <ENTER> <esc>:call PhanbugOpenCurrentLineAsFile()<cr>
     NERDTree .
     wincmd w   "try to make sure that the focus is one the file index, not nerdtree 
   endif
@@ -166,19 +166,6 @@ function! GetVisualSelection()
     let @a = a_save
   endtry
 endfunction
-
-function! PHPIDE_GoBackToRecentBuffer()
-  let g:openFilesIndex -= 1
-  let offset = g:openFilesIndex % len(g:openFiles)
-  exec 'edit! '.g:openFiles[offset]
-endfunction
-
-function! PHPIDE_GoForwardToRecentBuffer()
-  let g:openFilesIndex += 1
-  let offset = g:openFilesIndex % len(g:openFiles)
-  exec 'edit! '.g:openFiles[offset]
-endfunction
-
 
 function! ProcessFileChangedShell() 
   if v:fcs_reason == 'mode' || v:fcs_reason == 'time' 
@@ -274,33 +261,46 @@ endfunction
 
 function! PHPIDE_OpenFileForEdit(filepath, lineNumber)
   wincmd j
-  exec 'tabedit '.a:filepath
-  if index(g:openFiles, a:filepath) == -1
-    call add(g:openFiles, a:filepath)
+  let numOfTabs = tabpagenr('$')
+  let i = 1
+  let shouldOpenNewTab = 1
+  if numOfTabs > 1
+      while i <= numOfTabs
+          exec 'tabn '.i
+          if expand('%p') == a:filepath
+              let shouldOpenNewTab = 0
+              break
+          endif
+          let i += 1
+      endwhile
   endif
-  cal cursor(a:lineNumber, 1)
+
+  if shouldOpenNewTab == 1
+      exec 'tabedit '.a:filepath
+  endif
+  call cursor(a:lineNumber, 1)
 endfunction
 
 function! PhanbugDebugPHPFile()
-  "first, see if there is variable in register 0, the most yanked text
-  let possibleVariable = @0
-  if strlen(possibleVariable) == 0
-    "get from the current cursor
-    let possibleVariable = expand('<cword>')
-  endif
-  "clear register
-  call setreg(0, [])
-  let l = line(".")
-  let cmd = ''
-  if strlen(possibleVariable) > 0 && possibleVariable != '{'
-    let cmd = '~/phanbug/phanbug --cmd "sh ~/tmp.sh" --action inspect --file '.expand('%:p').' --line '.l.' --depth 4 --hardbreak 1 --variable '''.possibleVariable.''' > ~/phanbug.output'
-  else
-    let cmd = '~/phanbug/phanbug --cmd "sh ~/tmp.sh" --action inspect --file '.expand('%:p').' --line '.l.' --depth 4 --hardbreak 1 > ~/phanbug.output'
-  endif
-  let result=system(cmd)
-  pedit ~/phanbug.output
-  wincmd k
-  map <ENTER> <esc>:silent call PhanbugOpenCurrentLineAsFile()<cr>
+    "first, see if there is variable in register 0, the most yanked text
+    let possibleVariable = @0
+    if strlen(possibleVariable) == 0
+        "get from the current cursor
+        let possibleVariable = expand('<cword>')
+    endif
+    "clear register
+    call setreg(0, [])
+    let l = line(".")
+    let cmd = ''
+    if strlen(possibleVariable) > 0 && possibleVariable != '{'
+        let cmd = '~/phanbug/phanbug --cmd "sh ~/tmp.sh" --action inspect --file '.expand('%:p').' --line '.l.' --depth 4 --hardbreak 1 --variable '''.possibleVariable.''' > ~/phanbug.output'
+    else
+        let cmd = '~/phanbug/phanbug --cmd "sh ~/tmp.sh" --action inspect --file '.expand('%:p').' --line '.l.' --depth 4 --hardbreak 1 > ~/phanbug.output'
+    endif
+    let result=system(cmd)
+    pedit ~/phanbug.output
+    wincmd k
+    map <ENTER> <esc>:silent call PhanbugOpenCurrentLineAsFile()<cr>
 endfunction
 
 " set GUI font
@@ -403,10 +403,6 @@ nmap <S-k> :wincmd k<cr>
 map <C-P>  :call ShowProjectList() <cr> 
 "set current vim project directory 
 let $cur_vim_project_dir = "current"
-
-"go back to previous open file
-map <C-B> :call PHPIDE_GoBackToRecentBuffer()<cr>
-map <C-F> :call PHPIDE_GoForwardToRecentBuffer()<cr>
 
 "custom file type configuration
 au FileType javascript setl sw=2 sts=2 et
