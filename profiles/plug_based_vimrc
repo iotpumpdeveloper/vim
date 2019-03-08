@@ -196,7 +196,8 @@ function! FindPHPClassAndFunction()
     let wordIsAFunction = 0
     while i <= endPos
         if line[i] == '('
-            if line[i - strlen(s:word):i] == s:word.'('
+            let wordStartPos = i - strlen(s:word)
+            if line[wordStartPos:i] == s:word.'(' && wordStartPos >= 4 && line[wordStartPos - 4:i] != 'new '.s:word.'('
                 let wordIsAFunction = 1
                 break
             endif
