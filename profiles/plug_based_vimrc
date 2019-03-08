@@ -36,265 +36,271 @@ Plug 'AutoClose'
 call plug#end()
 
 function! StripTrailingWhitespaces()
-    let l = line(".")
-    let c = col(".")
-    %s/\s\+$//e
-    call cursor(l, c)
+  let l = line(".")
+  let c = col(".")
+  %s/\s\+$//e
+  call cursor(l, c)
 endfun
 
 function! Strip(input_string)
-    return substitute(a:input_string, '^\s*\(.\{-}\)\s*$', '\1', '')
+  return substitute(a:input_string, '^\s*\(.\{-}\)\s*$', '\1', '')
 endfunction
 
 function! ShowMostRecentFileList()
-    "make sure the window focus is on the rightmost 
-    wincmd l
-    exec 'pedit! /tmp/vim_mru_file_list.index | wincmd k'
-    map <ENTER> <esc>:silent call OpenCurrentLineAsFile()<cr>
+  "make sure the window focus is on the rightmost 
+  wincmd l
+  exec 'pedit! /tmp/vim_mru_file_list.index | wincmd k'
+  map <ENTER> <esc>:silent call OpenCurrentLineAsFile()<cr>
 endfunction
 
 function! PHPIDE_SETUP()
-    "set up shortcuts and mappings so we will have an ide setup for php
+  "set up shortcuts and mappings so we will have an ide setup for php
 
-    "set tabs and spaces for php
-    filetype plugin indent on
-    " show existing tab with 4 spaces width
-    set tabstop=4
-    " when indenting with '>', use 4 spaces width
-    set shiftwidth=4
-    " On pressing tab, insert 4 spaces
-    set expandtab
+  "set tabs and spaces for php
+  filetype plugin indent on
+  " show existing tab with 4 spaces width
+  set tabstop=4
+  " when indenting with '>', use 4 spaces width
+  set shiftwidth=4
+  " On pressing tab, insert 4 spaces
+  set expandtab
 
-    "try to find php file
-    map <C-O> :call FindPHPClassAndFunction()<CR>
+  set fileformats+=dos
 
-    "use phanbug to debug php
-    map <C-D> :call PhanbugDebugPHPFile()<CR>
+  "try to find php file
+  map <C-O> :call FindPHPClassAndFunction()<CR>
 
-    "clear the register @0
-    call setreg(0, [])
+  "use phanbug to debug php
+  map <C-D> :call PhanbugDebugPHPFile()<CR>
 
-    "trim all whitespaces
-    call StripTrailingWhitespaces()
+  "clear the register @0
+  call setreg(0, [])
+
+  "trim all whitespaces
+  call StripTrailingWhitespaces()
 endfunction
 
 function! OpenCurrentLineAsFile()
-    let line = getline('.')
-    if strlen(line) > 0 && line[0] != '#'
-        let filepath = fnameescape(line)
-        wincmd j
-        exec 'edit! '.filepath
-    endif
+  let line = getline('.')
+  if strlen(line) > 0 && line[0] != '#'
+    let filepath = fnameescape(line)
+    wincmd j
+    exec 'edit! '.filepath
+  endif
 endfunction
 
 function! ShowProjectList()
-    "make sure the window focus is on the rightmost 
-    wincmd l
-    au BufLeave *.list nmap r r
-    pedit! ~/.vim/projects/project.list
-    "map enter key to just switch to project, will not regenerate file index, 0 means no regenerate
-    "but we always should regenerate the index
-    nmap <ENTER> <esc>:call SwitchToProject(1)<cr>  
-    "map r key in normal mode to regenerate file index and switch to project, 1 means regenerate
-    nmap r <esc>:call SwitchToProject(1)<cr> 
-    wincmd k
+  "make sure the window focus is on the rightmost 
+  wincmd l
+  au BufLeave *.list nmap r r
+  pedit! ~/.vim/projects/project.list
+  "map enter key to just switch to project, will not regenerate file index, 0 means no regenerate
+  "but we always should regenerate the index
+  nmap <ENTER> <esc>:call SwitchToProject(1)<cr>  
+  "map r key in normal mode to regenerate file index and switch to project, 1 means regenerate
+  nmap r <esc>:call SwitchToProject(1)<cr> 
+  wincmd k
 endfunction
 
 function! SwitchToProject(regen_index)
-    let $project_file_index = '~/.vim/projects/fileindex'
-    let $project_function_index = '~/.vim/projects/php_function_list'
-    let line = getline('.')
-    let project_dir = ''
-    let project_file_extensions = ''
-    if strlen(line) > 0 && line[0] != '#'
-        let line_comps = split(line, "|")
-        if len(line_comps) == 2
-            let project_dir = Strip(line_comps[0])
-            let project_file_extensions = Strip(line_comps[1])
-            if a:regen_index == 1
-                echom 'generating index'
-                exec 'cd '.project_dir 
-                "set the global variable for current project directory 
-                let $cur_vim_project_dir = project_dir
-                call RegenerateFileIndex(project_file_extensions)
-            endif
-        else
-            let project_dir = Strip(line)
-            exec 'cd '.project_dir 
-        endif 
+  let $project_file_index = '~/.vim/projects/fileindex'
+  let $project_function_index = '~/.vim/projects/php_function_list'
+  let line = getline('.')
+  let project_dir = ''
+  let project_file_extensions = ''
+  if strlen(line) > 0 && line[0] != '#'
+    let line_comps = split(line, "|")
+    if len(line_comps) == 2
+      let project_dir = Strip(line_comps[0])
+      let project_file_extensions = Strip(line_comps[1])
+      if a:regen_index == 1
+        echom 'generating index'
+        exec 'cd '.project_dir 
+        "set the global variable for current project directory 
+        let $cur_vim_project_dir = project_dir
+        call RegenerateFileIndex(project_file_extensions)
+      endif
+    else
+      let project_dir = Strip(line)
+      exec 'cd '.project_dir 
+    endif 
 
-        if len(project_file_extensions) == 0
-            "no extension is given, simply open the most recently open files
-            exec 'silent edit! /tmp/vim_mru_file_list.index'
-        else 
-            exec 'silent edit! '.$project_file_index
-        endif
-        map <ENTER> <esc>:silent call PhanbugOpenCurrentLineAsFile()<cr>
-        NERDTree .
-        wincmd w   "try to make sure that the focus is one the file index, not nerdtree
+    if len(project_file_extensions) == 0
+      "no extension is given, simply open the most recently open files
+      exec 'silent edit! /tmp/vim_mru_file_list.index'
+    else 
+      exec 'silent edit! '.$project_file_index
     endif
+    "now make sure we just display the file index
+    wincmd j
+    bd
+    wincmd k
+    map <ENTER> <esc>:silent call PhanbugOpenCurrentLineAsFile()<cr>
+    NERDTree .
+    wincmd w   "try to make sure that the focus is one the file index, not nerdtree 
+  endif
 endfunction
 
 function! RegenerateFileIndex(project_file_extensions)
-    echom "Generating project related indexes..."
-    let cmd1 = 'find . -type f -name "*.'.a:project_file_extensions.'" >'.$project_file_index
-    let cmd2 = '~/.vim/scripts/generate_project_code_index '.$cur_vim_project_dir
-    let x = system(cmd1.';'.cmd2)
-    let g:openFiles = []
-    let g:openFilesIndex = -1
+  echom "Generating project related indexes..."
+  let cmd1 = 'find . -type f -name "*.'.a:project_file_extensions.'" >'.$project_file_index
+  let cmd2 = '~/.vim/scripts/generate_project_code_index '.$cur_vim_project_dir
+  let x = system(cmd1.';'.cmd2)
+  let g:openFiles = []
+  let g:openFilesIndex = -1
 endfunction
 
 
 function! GotoBuffer(bufname)
-    let bufmap = map(range(1, winnr('$')), '[bufname(winbufnr(v:val)), v:val]')
-    let thewindow = filter(bufmap, 'v:val[0] =~ a:bufname')[0][1]
-    "execute thewindow 'wincmd w'
+  let bufmap = map(range(1, winnr('$')), '[bufname(winbufnr(v:val)), v:val]')
+  let thewindow = filter(bufmap, 'v:val[0] =~ a:bufname')[0][1]
+  "execute thewindow 'wincmd w'
 endfunction
 
 function! GetVisualSelection()
-    try
-        let a_save = @a
-        normal! gv"ay
-        return @a
-    finally
-        let @a = a_save
-    endtry
+  try
+    let a_save = @a
+    normal! gv"ay
+    return @a
+  finally
+    let @a = a_save
+  endtry
 endfunction
 
 function! PHPIDE_GoBackToRecentBuffer()
-    let g:openFilesIndex -= 1
-    let offset = g:openFilesIndex % len(g:openFiles)
-    exec 'edit! '.g:openFiles[offset]
+  let g:openFilesIndex -= 1
+  let offset = g:openFilesIndex % len(g:openFiles)
+  exec 'edit! '.g:openFiles[offset]
 endfunction
 
 function! PHPIDE_GoForwardToRecentBuffer()
-    let g:openFilesIndex += 1
-    let offset = g:openFilesIndex % len(g:openFiles)
-    exec 'edit! '.g:openFiles[offset]
+  let g:openFilesIndex += 1
+  let offset = g:openFilesIndex % len(g:openFiles)
+  exec 'edit! '.g:openFiles[offset]
 endfunction
 
 
 function! ProcessFileChangedShell() 
-    if v:fcs_reason == 'mode' || v:fcs_reason == 'time' 
-        let v:fcs_choice = '' 
-    else 
-        let v:fcs_choice = 'ask' 
-    endif 
+  if v:fcs_reason == 'mode' || v:fcs_reason == 'time' 
+    let v:fcs_choice = '' 
+  else 
+    let v:fcs_choice = 'ask' 
+  endif 
 endfunction 
 
 "autocmd FileChangedShell <buffer> call ProcessFileChangedShell() 
 
 function! FindPHPClassAndFunction()
-    let result_list = '~/.vim/tmp/php_ide_class_function_search_result'
-    let s:word = expand('<cword>')
-    let curPos = getcurpos()[2]
+  let result_list = '~/.vim/tmp/php_ide_class_function_search_result'
+  let s:word = expand('<cword>')
+  let curPos = getcurpos()[2]
 
-    let line = getline('.')
-    let endPos = strlen(line) - 1
+  let line = getline('.')
+  let endPos = strlen(line) - 1
 
-    let i = curPos
-    let wordIsAFunction = 0
-    while i <= endPos
-        if line[i] == '('
-            let wordStartPos = i - strlen(s:word)
-            if line[wordStartPos:i] == s:word.'(' && wordStartPos >= 4 && line[wordStartPos - 4:i] != 'new '.s:word.'('
-                let wordIsAFunction = 1
-                break
-            endif
-        endif
-        let i += 1
-    endwhile
-
-    let cmd = ''
-    if wordIsAFunction == 1
-        let cmd = '~/.vim/scripts/find_function_in_project '.s:word.' > '.result_list
-    else
-        let cmd = '~/.vim/scripts/find_class_in_project '.s:word.' > '.result_list
+  let i = curPos
+  let wordIsAFunction = 0
+  while i <= endPos
+    if line[i] == '('
+      let wordStartPos = i - strlen(s:word)
+      if line[wordStartPos:i] == s:word.'(' && wordStartPos >= 4 && line[wordStartPos - 4:i] != 'new '.s:word.'('
+        let wordIsAFunction = 1
+        break
+      endif
     endif
+    let i += 1
+  endwhile
 
-    let x = system(cmd)
-    let result = system('cat '.result_list)
-    exec 'pedit! '.result_list
-    wincmd k
-    map <ENTER> <esc>:silent call PhanbugOpenCurrentLineAsFile()<cr>
-    "if the result contains only 1 entry, immediate only the matching file
-    let line_comps = split(result, "\n")
-    if len(line_comps) == 1
-        call PhanbugOpenCurrentLineAsFile()
-    endif
+  let cmd = ''
+  if wordIsAFunction == 1
+    let cmd = '~/.vim/scripts/find_function_in_project '.s:word.' > '.result_list
+  else
+    let cmd = '~/.vim/scripts/find_class_in_project '.s:word.' > '.result_list
+  endif
+
+  let x = system(cmd)
+  let result = system('cat '.result_list)
+  exec 'pedit! '.result_list
+  wincmd k
+  map <ENTER> <esc>:silent call PhanbugOpenCurrentLineAsFile()<cr>
+  "if the result contains only 1 entry, immediate only the matching file
+  let line_comps = split(result, "\n")
+  if len(line_comps) == 1
+    call PhanbugOpenCurrentLineAsFile()
+  endif
 endfunction
 
 function! PhanbugOpenResultInBuffer(result)
-    "split a dedicated buffer
-    if bufwinnr('__PHANBUG_DEBUG_BUFFER__') < 0
-        set splitright
-        vsplit __PHANBUG_DEBUG_BUFFER__
-        wincmd l
-    endif
-    call GotoBuffer('__PHANBUG_DEBUG_BUFFER__')
-    "clean things up
-    normal! ggdG
-    setlocal filetype=phanbugoutput
-    setlocal buftype=nofile
-    "append the result
-    call append(0, split(a:result, '\v\n'))
-    normal! gg
-    "back to the current buffer
-    "wincmd h
+  "split a dedicated buffer
+  if bufwinnr('__PHANBUG_DEBUG_BUFFER__') < 0
+    set splitright
+    vsplit __PHANBUG_DEBUG_BUFFER__
+    wincmd l
+  endif
+  call GotoBuffer('__PHANBUG_DEBUG_BUFFER__')
+  "clean things up
+  normal! ggdG
+  setlocal filetype=phanbugoutput
+  setlocal buftype=nofile
+  "append the result
+  call append(0, split(a:result, '\v\n'))
+  normal! gg
+  "back to the current buffer
+  "wincmd h
 endfunction
 
 function! PhanbugOpenCurrentLineAsFile()
-    let line = getline('.')
-    let line_comps = split(line, " ")
-    if len(line_comps) < 2
-        let possibleFile = line_comps[0]
-        let fileLength = strlen(possibleFile)
-        if possibleFile[fileLength - 4:fileLength] == '.php'
-            let filepath = fnameescape(possibleFile)
-            wincmd j
-            exec 'edit! '.filepath
-            if index(g:openFiles, filepath) == -1
-                call add(g:openFiles, filepath)
-            endif
-        endif
-        return
+  let line = getline('.')
+  let line_comps = split(line, " ")
+  if len(line_comps) < 2
+    let possibleFile = line_comps[0]
+    let fileLength = strlen(possibleFile)
+    if possibleFile[fileLength - 4:fileLength] == '.php'
+      let filepath = fnameescape(possibleFile)
+      call PHPIDE_OpenFileForEdit(filepath, 1)
     endif
-    let possibleFile = line_comps[1]
-    let comps = split(possibleFile, "(")
-    if len(comps) < 2
-        return
-    endif 
-    let file = comps[0]
-    let line = substitute(comps[1],"\(","","g")
-    let filepath = fnameescape(file)
-    wincmd j
-    exec 'edit! '.filepath
-    if index(g:openFiles, filepath) == -1
-        call add(g:openFiles, filepath)
-    endif
-    cal cursor(line, 1)
+    return
+  endif
+  let possibleFile = line_comps[1]
+  let comps = split(possibleFile, "(")
+  if len(comps) < 2
+    return
+  endif 
+  let file = comps[0]
+  let line = substitute(comps[1],"\(","","g")
+  let filepath = fnameescape(file)
+  call PHPIDE_OpenFileForEdit(filepath, line)
+endfunction
+
+function! PHPIDE_OpenFileForEdit(filepath, lineNumber)
+  wincmd j
+  exec 'tabedit '.a:filepath
+  if index(g:openFiles, a:filepath) == -1
+    call add(g:openFiles, a:filepath)
+  endif
+  cal cursor(a:lineNumber, 1)
 endfunction
 
 function! PhanbugDebugPHPFile()
-    "first, see if there is variable in register 0, the most yanked text
-    let possibleVariable = @0
-    if strlen(possibleVariable) == 0
-        "get from the current cursor
-        let possibleVariable = expand('<cword>')
-    endif
-    "clear register
-    call setreg(0, [])
-    let l = line(".")
-    let cmd = ''
-    if strlen(possibleVariable) > 0 && possibleVariable != '{'
-        let cmd = '~/phanbug/phanbug --cmd "sh ~/tmp.sh" --action inspect --file '.expand('%:p').' --line '.l.' --depth 4 --hardbreak 1 --variable '''.possibleVariable.''' > ~/phanbug.output'
-    else
-        let cmd = '~/phanbug/phanbug --cmd "sh ~/tmp.sh" --action inspect --file '.expand('%:p').' --line '.l.' --depth 4 --hardbreak 1 > ~/phanbug.output'
-    endif
-    let result=system(cmd)
-    pedit ~/phanbug.output
-    wincmd k
-    map <ENTER> <esc>:silent call PhanbugOpenCurrentLineAsFile()<cr>
+  "first, see if there is variable in register 0, the most yanked text
+  let possibleVariable = @0
+  if strlen(possibleVariable) == 0
+    "get from the current cursor
+    let possibleVariable = expand('<cword>')
+  endif
+  "clear register
+  call setreg(0, [])
+  let l = line(".")
+  let cmd = ''
+  if strlen(possibleVariable) > 0 && possibleVariable != '{'
+    let cmd = '~/phanbug/phanbug --cmd "sh ~/tmp.sh" --action inspect --file '.expand('%:p').' --line '.l.' --depth 4 --hardbreak 1 --variable '''.possibleVariable.''' > ~/phanbug.output'
+  else
+    let cmd = '~/phanbug/phanbug --cmd "sh ~/tmp.sh" --action inspect --file '.expand('%:p').' --line '.l.' --depth 4 --hardbreak 1 > ~/phanbug.output'
+  endif
+  let result=system(cmd)
+  pedit ~/phanbug.output
+  wincmd k
+  map <ENTER> <esc>:silent call PhanbugOpenCurrentLineAsFile()<cr>
 endfunction
 
 " set GUI font
