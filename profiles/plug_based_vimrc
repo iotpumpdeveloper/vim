@@ -136,9 +136,6 @@ function! SwitchToProject(regen_index)
             exec 'silent edit! '.$project_file_index
         endif
         "now make sure we just display the file index
-        wincmd j
-        bd
-        wincmd k
         map <ENTER> <esc>:call PHPIDE_OpenCurrentLineAsFile()<cr>
         NERDTree .
         wincmd w   "try to make sure that the focus is one the file index, not nerdtree 
