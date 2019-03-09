@@ -72,7 +72,7 @@ function! PHPIDE_SETUP()
     set fileformats+=dos
 
     "try to find php file
-    map <C-O> :call FindPHPClassAndFunction()<CR>
+    map <C-O> :call PHPIDE_SmartSearch()<CR>
 
     "use phanbug to debug php
     map <C-D> :call PhanbugDebugPHPFile()<CR>
@@ -121,7 +121,7 @@ function! SwitchToProject(regen_index)
                 echom 'generating index'
                 exec 'cd '.project_dir 
                 "set the global variable for current project directory 
-                let $cur_vim_project_dir = project_dir
+                let $cur_vim_project_dir = trim(system('pwd'))
                 call RegenerateFileIndex(project_file_extensions)
             endif
         else
@@ -139,7 +139,7 @@ function! SwitchToProject(regen_index)
         wincmd j
         bd
         wincmd k
-        map <ENTER> <esc>:call PhanbugOpenCurrentLineAsFile()<cr>
+        map <ENTER> <esc>:call PHPIDE_OpenCurrentLineAsFile()<cr>
         NERDTree .
         wincmd w   "try to make sure that the focus is one the file index, not nerdtree 
     endif
@@ -181,43 +181,59 @@ endfunction
 
 "autocmd FileChangedShell <buffer> call ProcessFileChangedShell() 
 
-function! FindPHPClassAndFunction()
+function! PHPIDE_SmartSearch()
     let result_list = '~/.vim/preview.output'
-    let s:word = expand('<cword>')
+    let possibleWord = @0
+    if strlen(possibleWord) == 0
+        let possibleWord = expand('<cword>')
+    endif
+    "clear register
+    call setreg(0, [])
+    let wordLength = strlen(possibleWord) 
     let curPos = getcurpos()[2]
 
     let line = getline('.')
     let endPos = strlen(line) - 1
 
     let i = curPos
-    let wordIsAFunction = 0
-    while i <= endPos
-        if line[i] == '('
-            let wordStartPos = i - strlen(s:word)
-            if line[wordStartPos:i] == s:word.'(' && wordStartPos >= 4 && line[wordStartPos - 4:i] != 'new '.s:word.'('
-                let wordIsAFunction = 1
-                break
+    let wordType = 'class' "default is class
+    "will it be a file
+    if possibleWord[wordLength - 4:wordLength] == '.php'
+       let wordType = 'file' 
+    else 
+        while i <= endPos
+            if line[i] == '('
+                let wordStartPos = i - strlen(possibleWord)
+                if line[wordStartPos:i] == possibleWord.'(' && wordStartPos >= 4 && line[wordStartPos - 4:i] != 'new '.possibleWord.'('
+                    let wordType = 'function'
+                    break
+                endif
             endif
-        endif
-        let i += 1
-    endwhile
+            let i += 1
+        endwhile
+    endif
 
     let cmd = ''
-    if wordIsAFunction == 1
-        let cmd = '~/.vim/scripts/find_function_in_project '.s:word.' > '.result_list
-    else
-        let cmd = '~/.vim/scripts/find_class_in_project '.s:word.' > '.result_list
+    if wordType == 'function'
+        let cmd = '~/.vim/scripts/find_function_in_project '.possibleWord.' > '.result_list
+    elseif wordType == 'class'
+        let cmd = '~/.vim/scripts/find_class_in_project '.possibleWord.' > '.result_list
+    elseif wordType == 'file'
+        let filepath = $cur_vim_project_dir.'/'.possibleWord[0:wordLength]
+        let filepath = substitute(filepath, '\\','\/','g')
+        exec 'edit '.filepath
+        return
     endif
 
     let x = system(cmd)
     let result = system('cat '.result_list)
     exec 'pedit! '.result_list
     wincmd k
-    map <ENTER> <esc>:silent call PhanbugOpenCurrentLineAsFile()<cr>
+    map <ENTER> <esc>:silent call PHPIDE_OpenCurrentLineAsFile()<cr>
     "if the result contains only 1 entry, immediate only the matching file
     let line_comps = split(result, "\n")
     if len(line_comps) == 1
-        call PhanbugOpenCurrentLineAsFile()
+        call PHPIDE_OpenCurrentLineAsFile()
     endif
 endfunction
 
@@ -240,7 +256,7 @@ function! PhanbugOpenResultInBuffer(result)
     "wincmd h
 endfunction
 
-function! PhanbugOpenCurrentLineAsFile()
+function! PHPIDE_OpenCurrentLineAsFile()
     let line = getline('.')
     let line_comps = split(line, " ")
     if len(line_comps) < 2
@@ -304,7 +320,7 @@ function! PhanbugDebugPHPFile()
     let result=system(cmd)
     exec 'pedit ~/.vim/preview.output'
     wincmd k
-    map <ENTER> <esc>:silent call PhanbugOpenCurrentLineAsFile()<cr>
+    map <ENTER> <esc>:silent call PHPIDE_OpenCurrentLineAsFile()<cr>
 endfunction
 
 " set GUI font
