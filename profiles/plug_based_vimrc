@@ -209,7 +209,6 @@ function! PHPIDE_SmartSearch()
             let i += 1
         endwhile
     endif
-
     let cmd = ''
     if wordType == 'function'
         let cmd = '~/.vim/scripts/find_function_in_project '.possibleWord.' > '.result_list
@@ -221,7 +220,7 @@ function! PHPIDE_SmartSearch()
         exec 'edit '.filepath
         return
     endif
-
+    
     let x = system(cmd)
     let result = system('cat '.result_list)
     exec 'pedit! '.result_list
@@ -324,7 +323,7 @@ endfunction
 set guifont=Monaco:h12
 
 " display full path of an open file
-set statusline+=%F
+set statusline+=%F:%l:%v
 
 "highlight all searches
 :set viminfo^=h
@@ -348,6 +347,7 @@ set undolevels=1000      " use many muchos levels of undo
 set modifiable "make buffer modifiable"
 "set ruler
 set ruler
+set rulerformat=%l,%v
 
 syntax on
 set synmaxcol=2048
