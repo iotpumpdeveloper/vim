@@ -110,6 +110,7 @@ function! SwitchToProject(regen_index)
     let $project_file_index = '~/.vim/projects/fileindex'
     let $project_function_index = '~/.vim/projects/php_function_list'
     let line = getline('.')
+    let $cur_vim_project = line
     let project_dir = ''
     let project_file_extensions = ''
     if strlen(line) > 0 && line[0] != '#'
@@ -144,8 +145,9 @@ endfunction
 
 function! RegenerateFileIndex(project_file_extensions)
     echom "Generating project related indexes..."
+    let result_list = '~/.vim/preview.output'
     let cmd1 = 'find $(pwd) -type f -name "*.'.a:project_file_extensions.'" >'.$project_file_index
-    let cmd2 = '~/.vim/scripts/generate_project_code_index '.$cur_vim_project_dir
+    let cmd2 = '~/.vim/plugged/phim/bin/phim project.createindex --project '''.$cur_vim_project.''' > '.result_list
     let x = system(cmd1.';'.cmd2)
     let g:openFiles = []
     let g:openFilesIndex = -1
@@ -180,47 +182,10 @@ endfunction
 
 function! PHPIDE_SmartSearch()
     let result_list = '~/.vim/preview.output'
-    let possibleWord = @0
-    if strlen(possibleWord) == 0
-        let possibleWord = expand('<cword>')
-    endif
-    "clear register
-    call setreg(0, [])
-    let wordLength = strlen(possibleWord) 
+    let curFile = expand('%:p') 
     let curPos = getcurpos()[2]
-
-    let line = getline('.')
-    let endPos = strlen(line) - 1
-
-    let i = curPos
-    let wordType = 'class' "default is class
-    "will it be a file
-    if possibleWord[wordLength - 4:wordLength] == '.php'
-       let wordType = 'file' 
-    else 
-        while i <= endPos
-            if line[i] == '('
-                let wordStartPos = i - strlen(possibleWord)
-                if line[wordStartPos:i] == possibleWord.'(' && wordStartPos >= 4 && line[wordStartPos - 4:i] != 'new '.possibleWord.'('
-                    let wordType = 'function'
-                    break
-                endif
-            endif
-            let i += 1
-        endwhile
-    endif
-    let cmd = ''
-    if wordType == 'function'
-        let cmd = '~/.vim/scripts/find_function_in_project '.possibleWord.' > '.result_list
-    elseif wordType == 'class'
-        let cmd = '~/.vim/scripts/find_class_in_project '.possibleWord.' > '.result_list
-    elseif wordType == 'file'
-        let filepath = $cur_vim_project_dir.'/'.possibleWord[0:wordLength]
-        let filepath = substitute(filepath, '\\','\/','g')
-        exec 'edit '.filepath
-        return
-    endif
-    
+    let lineNum = line('.')
+    let cmd = '~/.vim/plugged/phim/bin/phim project.search --file '.curFile.' --line '.lineNum.' --pos '.curPos.' --project '''.$cur_vim_project.''' > '.result_list
     let x = system(cmd)
     let result = system('cat '.result_list)
     exec 'pedit! '.result_list
