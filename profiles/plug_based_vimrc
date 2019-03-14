@@ -71,8 +71,11 @@ function! PHPIDE_SETUP()
 
     set fileformats+=dos
 
-    "try to find php file
+    "perform smart search
     map <C-O> :call PHPIDE_SmartSearch()<CR>
+
+    "when mouse right click, perform smart search
+    map <RightMouse> :call PHPIDE_SmartSearch()<CR>
 
     "use phanbug to debug php
     map <C-D> :call PhanbugDebugPHPFile()<CR>
