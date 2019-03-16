@@ -122,7 +122,6 @@ function! SwitchToProject(regen_index)
             let project_dir = Strip(line_comps[0])
             let project_file_extensions = Strip(line_comps[1])
             if a:regen_index == 1
-                echom 'generating index'
                 exec 'cd '.project_dir 
                 "set the global variable for current project directory 
                 let $cur_vim_project_dir = trim(system('pwd'))
@@ -150,8 +149,9 @@ function! RegenerateFileIndex(project_file_extensions)
     echom "Generating project related indexes..."
     let result_list = '~/.vim/preview.output'
     let cmd1 = 'find $(pwd) -type f -name "*.'.a:project_file_extensions.'" >'.$project_file_index
-    let cmd2 = '~/.vim/plugged/phim/bin/phim project.createindex --project '''.$cur_vim_project.''' > '.result_list
-    let x = system(cmd1.';'.cmd2)
+    let x = system(cmd1)
+    let cmd2 = '~/.vim/plugged/phim/bin/phim project.init --project '''.$cur_vim_project.''''
+    let $cur_vim_project_hash = system(cmd2)
     let g:openFiles = []
     let g:openFilesIndex = -1
 endfunction
@@ -188,7 +188,7 @@ function! PHPIDE_SmartSearch()
     let curFile = expand('%:p') 
     let curPos = getcurpos()[2]
     let lineNum = line('.')
-    let cmd = '~/.vim/plugged/phim/bin/phim project.search --file '.curFile.' --line '.lineNum.' --pos '.curPos.' --project '''.$cur_vim_project.''' > '.result_list
+    let cmd = '~/.vim/plugged/phim/bin/phim project.search --file '.curFile.' --line '.lineNum.' --pos '.curPos.' --projecthash '''.$cur_vim_project_hash.''' > '.result_list
     let x = system(cmd)
     let result = system('cat '.result_list)
     exec 'pedit! '.result_list
