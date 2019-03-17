@@ -136,10 +136,9 @@ function! SwitchToProject(regen_index)
             "no extension is given, simply open the most recently open files
             exec 'silent edit! /tmp/vim_mru_file_list.index'
         else 
-            exec 'silent edit! '.$project_file_index
+            call PHPIDE_OpenProjectFileList()
+            map <C-I> <esc>:call PHPIDE_OpenProjectFileList()<cr>
         endif
-        "now make sure we just display the file index
-        map <ENTER> <esc>:call PHPIDE_OpenCurrentLineAsFile()<cr>
         NERDTree .
         wincmd w   "try to make sure that the focus is one the file index, not nerdtree 
     endif
@@ -203,90 +202,96 @@ function! PHPIDE_SmartSearch()
     endif
 endfunction
 
+function! PHPIDE_OpenProjectFileList()
+  exec 'silent edit! '.$project_file_index
+  "now make sure we just display the file index
+  map <ENTER> <esc>:call PHPIDE_OpenCurrentLineAsFile()<cr>
+endfunction
+
 function! PhanbugOpenResultInBuffer(result)
-    "split a dedicated buffer
-    if bufwinnr('__PHANBUG_DEBUG_BUFFER__') < 0
-        set splitright
-        vsplit __PHANBUG_DEBUG_BUFFER__
-        wincmd l
-    endif
-    call GotoBuffer('__PHANBUG_DEBUG_BUFFER__')
-    "clean things up
-    normal! ggdG
-    setlocal filetype=phanbugoutput
-    setlocal buftype=nofile
-    "append the result
-    call append(0, split(a:result, '\v\n'))
-    normal! gg
-    "back to the current buffer
-    "wincmd h
+  "split a dedicated buffer
+  if bufwinnr('__PHANBUG_DEBUG_BUFFER__') < 0
+    set splitright
+    vsplit __PHANBUG_DEBUG_BUFFER__
+    wincmd l
+  endif
+  call GotoBuffer('__PHANBUG_DEBUG_BUFFER__')
+  "clean things up
+  normal! ggdG
+  setlocal filetype=phanbugoutput
+  setlocal buftype=nofile
+  "append the result
+  call append(0, split(a:result, '\v\n'))
+  normal! gg
+  "back to the current buffer
+  "wincmd h
 endfunction
 
 function! PHPIDE_OpenCurrentLineAsFile()
-    let line = getline('.')
-    let line_comps = split(line, " ")
-    if len(line_comps) < 2
-        let possibleFile = line_comps[0]
-        let fileLength = strlen(possibleFile)
-        if possibleFile[fileLength - 4:fileLength] == '.php'
-            let filepath = fnameescape(possibleFile)
-            call PHPIDE_OpenFileForEdit(filepath, 1)
-        endif
-        return
+  let line = getline('.')
+  let line_comps = split(line, " ")
+  if len(line_comps) < 2
+    let possibleFile = line_comps[0]
+    let fileLength = strlen(possibleFile)
+    if possibleFile[fileLength - 4:fileLength] == '.php'
+      let filepath = fnameescape(possibleFile)
+      call PHPIDE_OpenFileForEdit(filepath, 1)
     endif
-    let possibleFile = line_comps[1]
-    let comps = split(possibleFile, "(")
-    if len(comps) < 2
-        return
-    endif 
-    let file = comps[0]
-    let line = substitute(comps[1],"\(","","g")
-    let filepath = fnameescape(file)
-    call PHPIDE_OpenFileForEdit(filepath, line)
+    return
+  endif
+  let possibleFile = line_comps[1]
+  let comps = split(possibleFile, "(")
+  if len(comps) < 2
+    return
+  endif 
+  let file = comps[0]
+  let line = substitute(comps[1],"\(","","g")
+  let filepath = fnameescape(file)
+  call PHPIDE_OpenFileForEdit(filepath, line)
 endfunction
 
 function! PHPIDE_OpenFileForEdit(filepath, lineNumber)
-    wincmd j
-    let numOfTabs = tabpagenr('$')
-    let i = 1
-    let shouldOpenNewTab = 1
-    if numOfTabs > 1
-        while i <= numOfTabs
-            exec 'tabn '.i
-            if expand('%p') == a:filepath
-                let shouldOpenNewTab = 0
-                break
-            endif
-            let i += 1
-        endwhile
-    endif
+  wincmd j
+  let numOfTabs = tabpagenr('$')
+  let i = 1
+  let shouldOpenNewTab = 1
+  if numOfTabs > 1
+    while i <= numOfTabs
+      exec 'tabn '.i
+      if expand('%p') == a:filepath
+        let shouldOpenNewTab = 0
+        break
+      endif
+      let i += 1
+    endwhile
+  endif
 
-    if shouldOpenNewTab == 1
-        exec 'tabedit '.a:filepath
-    endif
-    call cursor(a:lineNumber, 1)
+  if shouldOpenNewTab == 1
+    exec 'tabedit '.a:filepath
+  endif
+  call cursor(a:lineNumber, 1)
 endfunction
 
 function! PhanbugDebugPHPFile()
-    "first, see if there is variable in register 0, the most yanked text
-    let possibleVariable = @0
-    if strlen(possibleVariable) == 0
-        "get from the current cursor
-        let possibleVariable = expand('<cword>')
-    endif
-    "clear register
-    call setreg(0, [])
-    let l = line(".")
-    let cmd = ''
-    if strlen(possibleVariable) > 0 && possibleVariable != '{'
-        let cmd = '~/phanbug/phanbug --cmd "sh ~/tmp.sh" --action inspect --file '.expand('%:p').' --line '.l.' --depth 4 --hardbreak 1 --variable '''.possibleVariable.''' > ~/.vim/preview.output'
-    else
-        let cmd = '~/phanbug/phanbug --cmd "sh ~/tmp.sh" --action inspect --file '.expand('%:p').' --line '.l.' --depth 4 --hardbreak 1 > ~/.vim/preview.output'
-    endif
-    let result=system(cmd)
-    exec 'pedit ~/.vim/preview.output'
-    wincmd k
-    map <ENTER> <esc>:silent call PHPIDE_OpenCurrentLineAsFile()<cr>
+  "first, see if there is variable in register 0, the most yanked text
+  let possibleVariable = @0
+  if strlen(possibleVariable) == 0
+    "get from the current cursor
+    let possibleVariable = expand('<cword>')
+  endif
+  "clear register
+  call setreg(0, [])
+  let l = line(".")
+  let cmd = ''
+  if strlen(possibleVariable) > 0 && possibleVariable != '{'
+    let cmd = '~/phanbug/phanbug --cmd "sh ~/tmp.sh" --action inspect --file '.expand('%:p').' --line '.l.' --depth 4 --hardbreak 1 --variable '''.possibleVariable.''' > ~/.vim/preview.output'
+  else
+    let cmd = '~/phanbug/phanbug --cmd "sh ~/tmp.sh" --action inspect --file '.expand('%:p').' --line '.l.' --depth 4 --hardbreak 1 > ~/.vim/preview.output'
+  endif
+  let result=system(cmd)
+  exec 'pedit ~/.vim/preview.output'
+  wincmd k
+  map <ENTER> <esc>:silent call PHPIDE_OpenCurrentLineAsFile()<cr>
 endfunction
 
 " set GUI font
