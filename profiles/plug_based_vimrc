@@ -116,6 +116,8 @@ function! ShowProjectList()
 endfunction
 
 function! SwitchToProject(regen_index)
+    nmap <C-I> <esc>:call PHPIDE_OpenProjectFileList()<cr>
+
     let $project_file_index = '~/.vim/projects/fileindex'
     let $project_function_index = '~/.vim/projects/php_function_list'
     let line = getline('.')
@@ -211,6 +213,7 @@ function! PHPIDE_OpenProjectFileList()
   exec 'silent pedit! '.$project_file_index
   "now make sure we just display the file index
   map <ENTER> <esc>:call PHPIDE_OpenCurrentLineAsFile()<cr>
+  wincmd k
 endfunction
 
 function! PhanbugOpenResultInBuffer(result)
