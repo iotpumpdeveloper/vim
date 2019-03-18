@@ -83,6 +83,8 @@ function! PHPIDE_SETUP()
     "use phanbug to debug php
     map <C-D> :call PhanbugDebugPHPFile()<CR>
 
+    "when press control i in normal mode, open the current project file list 
+    nmap <C-I> <esc>:call PHPIDE_OpenProjectFileList()<cr>
 
     "clear the register @0
     call setreg(0, [])
@@ -141,7 +143,6 @@ function! SwitchToProject(regen_index)
             exec 'silent edit! /tmp/vim_mru_file_list.index'
         else 
             call PHPIDE_OpenProjectFileList()
-            map <C-I> <esc>:call PHPIDE_OpenProjectFileList()<cr>
         endif
         NERDTree .
         wincmd w   "try to make sure that the focus is one the file index, not nerdtree 
@@ -207,7 +208,7 @@ function! PHPIDE_SmartSearch()
 endfunction
 
 function! PHPIDE_OpenProjectFileList()
-  exec 'silent edit! '.$project_file_index
+  exec 'silent pedit! '.$project_file_index
   "now make sure we just display the file index
   map <ENTER> <esc>:call PHPIDE_OpenCurrentLineAsFile()<cr>
 endfunction
