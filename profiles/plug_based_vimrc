@@ -77,8 +77,12 @@ function! PHPIDE_SETUP()
     "when mouse right click, perform smart search
     map <RightMouse> :call PHPIDE_SmartSearch()<CR>
 
+    "when in normal node and press tab, perform smart search
+    nmap <Tab> :call PHPIDE_SmartSearch()<CR>
+
     "use phanbug to debug php
     map <C-D> :call PhanbugDebugPHPFile()<CR>
+
 
     "clear the register @0
     call setreg(0, [])
@@ -149,9 +153,9 @@ function! RegenerateFileIndex(project_file_extensions)
     let result_list = '~/.vim/preview.output'
     let cmd1 = 'find $(pwd) -type f -name "*.'.a:project_file_extensions.'" >'.$project_file_index
     let x = system(cmd1)
-    let cmd2 = '~/.vim/plugged/phim/bin/phim project.gethash --project '''.$cur_vim_project.''''
+    let cmd2 = 'php -c ~/cli.ini ~/.vim/plugged/phim/bin/phim project.gethash --project '''.$cur_vim_project.''''
     let $cur_vim_project_hash = system(cmd2)
-    let cmd3 = '~/.vim/plugged/phim/bin/phim project.init --project '''.$cur_vim_project.''' &'
+    let cmd3 = 'php -c ~/cli.ini ~/.vim/plugged/phim/bin/phim project.init --project '''.$cur_vim_project.''' &'
     let y = system(cmd3)
     let g:openFiles = []
     let g:openFilesIndex = -1
