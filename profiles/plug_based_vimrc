@@ -292,9 +292,9 @@ function! PhanbugDebugPHPFile()
   let l = line(".")
   let cmd = ''
   if strlen(possibleVariable) > 0 && possibleVariable != '{'
-    let cmd = '~/phanbug/phanbug --cmd "sh ~/tmp.sh" --action inspect --file '.expand('%:p').' --line '.l.' --depth 4 --hardbreak 1 --variable '''.possibleVariable.''' > ~/.vim/preview.output'
+    let cmd = '~/phanbug/phanbug --cmd "sh ~/tmp.sh" --action inspect --file '.expand('%:p').' --line '.l.' --depth 4 --hardbreak 0 --variable '''.possibleVariable.''' > ~/.vim/preview.output'
   else
-    let cmd = '~/phanbug/phanbug --cmd "sh ~/tmp.sh" --action inspect --file '.expand('%:p').' --line '.l.' --depth 4 --hardbreak 1 > ~/.vim/preview.output'
+    let cmd = '~/phanbug/phanbug --cmd "sh ~/tmp.sh" --action inspect --file '.expand('%:p').' --line '.l.' --depth 4 --hardbreak 0 > ~/.vim/preview.output'
   endif
   let result=system(cmd)
   exec 'pedit ~/.vim/preview.output'
