@@ -148,6 +148,7 @@ function! SwitchToProject(regen_index)
         endif
         NERDTree .
         wincmd w   "try to make sure that the focus is one the file index, not nerdtree 
+        call PHPIDE_SETUP()
     endif
 endfunction
 
@@ -388,7 +389,7 @@ set noerrorbells visualbell t_vb=
 map     <C-R>       :call ShowMostRecentFileList()<CR> 
 
 "set up php
-au BufEnter *.php :call PHPIDE_SETUP()
+"au BufEnter *.php :call PHPIDE_SETUP()
 
 "in the tmp file, when click, open the current file
 "au BufEnter tmp nmap <LeftRelease> :silent call OpenCurrentLineAsFile()<CR>
