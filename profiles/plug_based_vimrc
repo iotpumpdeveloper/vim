@@ -57,9 +57,7 @@ augroup closepreview
     autocmd InsertLeave * exec 'pedit ~/.vim/preview.output'
 augroup END
 
-function! PHPIDE_SETUP()
-    "set up shortcuts and mappings so we will have an ide setup for php
-
+function! PHP_SETUP()
     "set tabs and spaces for php
     filetype plugin indent on
     " show existing tab with 4 spaces width
@@ -70,6 +68,10 @@ function! PHPIDE_SETUP()
     set expandtab
 
     set fileformats+=dos
+endfunction
+
+function! PHPIDE_SETUP()
+    "set up shortcuts and mappings so we will have an ide setup for php
 
     "perform smart search
     map <C-O> :call PHPIDE_SmartSearch()<CR>
@@ -392,7 +394,7 @@ set noerrorbells visualbell t_vb=
 map     <C-R>       :call ShowMostRecentFileList()<CR> 
 
 "set up php
-"au BufEnter *.php :call PHPIDE_SETUP()
+au BufEnter *.php :call PHP_SETUP()
 
 "in the tmp file, when click, open the current file
 "au BufEnter tmp nmap <LeftRelease> :silent call OpenCurrentLineAsFile()<CR>
