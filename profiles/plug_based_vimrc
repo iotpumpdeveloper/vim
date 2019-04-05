@@ -293,15 +293,18 @@ function! PhanbugDebugPHPFile()
   let l = line(".")
   let cmd = ''
   if strlen(possibleVariable) > 0 && possibleVariable != '{'
-    let cmd = '~/phanbug/phanbug --cmd "sh ~/tmp.sh" --action inspect --file '.expand('%:p').' --line '.l.' --depth 4 --hardbreak 1 --variable '''.possibleVariable.''''
+    let cmd = '~/phanbug/phanbug --cmd "sh ~/tmp.sh" --action inspect --file '.expand('%:p').' --line '.l.' --depth 4 --hardbreak 0 --variable '''.possibleVariable.''''
   else
-    let cmd = '~/phanbug/phanbug --cmd "sh ~/tmp.sh" --action inspect --file '.expand('%:p').' --line '.l.' --depth 4 --hardbreak 1'
+    let cmd = '~/phanbug/phanbug --cmd "sh ~/tmp.sh" --action inspect --file '.expand('%:p').' --line '.l.' --depth 4 --hardbreak 0'
   endif
   let result=system(cmd)
   exec 'pedit! /tmp/phanbug_output'
   wincmd k
+  normal! gg
   map <ENTER> <esc>:silent call PHPIDE_OpenCurrentLineAsFile()<cr>
 endfunction
+
+set TZ=EST4
 
 " set GUI font
 set guifont=Monaco:h12
