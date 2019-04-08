@@ -92,6 +92,9 @@ function! PHPIDE_SETUP()
     call setreg(0, [])
 
     autocmd BufWritePre *.php call StripTrailingWhitespaces()
+
+    "define the Find-In-Project user command to allow searching in the project
+    command! -nargs=1 FIP call PHPIDE_FindWordInProject(<f-args>)
 endfunction
 
 function! OpenCurrentLineAsFile()
@@ -216,6 +219,13 @@ function! PHPIDE_OpenProjectFileList()
   "now make sure we just display the file index
   map <ENTER> <esc>:call PHPIDE_OpenCurrentLineAsFile()<cr>
   wincmd k
+endfunction
+
+function! PHPIDE_FindWordInProject(word)
+  map <ENTER> <esc>:silent call PHPIDE_OpenCurrentLineAsFile()<cr>
+  let cmd = 'cd '.$cur_vim_project_dir.'; ag '.a:word.' --skip-vcs-ignores --php --vimgrep > /tmp/phpide_search_output'
+  let result=system(cmd)
+  exec 'pedit! /tmp/phpide_search_output'
 endfunction
 
 function! PhanbugOpenResultInBuffer(result)
