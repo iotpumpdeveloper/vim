@@ -223,7 +223,7 @@ endfunction
 
 function! PHPIDE_FindWordInProject(word)
   map <ENTER> <esc>:silent call PHPIDE_OpenCurrentLineAsFile()<cr>
-  let cmd = 'cd '.$cur_vim_project_dir.'; ag '.a:word.' --skip-vcs-ignores --php --vimgrep > /tmp/phpide_search_output'
+  let cmd = 'php -c ~/cli.ini ~/.vim/plugged/phim/bin/phim project.agsearch --project '.$cur_vim_project_dir.' --word '.a:word.' > /tmp/phpide_search_output'
   let result=system(cmd)
   exec 'pedit! /tmp/phpide_search_output'
 endfunction
