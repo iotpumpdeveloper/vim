@@ -318,7 +318,7 @@ endfunction
 set TZ=EST4
 
 " set GUI font
-set guifont=Monaco:h12
+set guifont=Monaco:h14
 
 " display full path of an open file
 set statusline+=%F:%l:%v
