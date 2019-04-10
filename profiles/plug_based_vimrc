@@ -82,8 +82,8 @@ function! PHPIDE_SETUP()
     "when in normal node and press tab, perform smart search
     nmap <Tab> :call PHPIDE_SmartSearch()<CR>
 
-    "use phanbug to debug php
-    map <C-D> :call PhanbugDebugPHPFile()<CR>
+    "debug php
+    map <C-D> :call PHPIDE_DebugPHPFile()<CR>
 
     "convenient way to search current word in project
     map <C-S> :call PHPIDE_FindCurrentWordInProject()<CR>
@@ -232,28 +232,9 @@ endfunction
 
 function! PHPIDE_FindWordInProject(word)
   map <ENTER> <esc>:silent call PHPIDE_OpenCurrentLineAsFile()<cr>
-  let cmd = 'php -c ~/cli.ini ~/.vim/plugged/phim/bin/phim project.agsearch --project '.$cur_vim_project_dir.' --word '.a:word.' > /tmp/phpide_search_output'
+  let cmd = 'php -c ~/cli.ini ~/.vim/plugged/phim/bin/phim project.agsearch --project '.$cur_vim_project_dir.' --word '.a:word.' > ~/.vim/preview.output'
   let result=system(cmd)
-  exec 'pedit! /tmp/phpide_search_output'
-endfunction
-
-function! PhanbugOpenResultInBuffer(result)
-  "split a dedicated buffer
-  if bufwinnr('__PHANBUG_DEBUG_BUFFER__') < 0
-    set splitright
-    vsplit __PHANBUG_DEBUG_BUFFER__
-    wincmd l
-  endif
-  call GotoBuffer('__PHANBUG_DEBUG_BUFFER__')
-  "clean things up
-  normal! ggdG
-  setlocal filetype=phanbugoutput
-  setlocal buftype=nofile
-  "append the result
-  call append(0, split(a:result, '\v\n'))
-  normal! gg
-  "back to the current buffer
-  "wincmd h
+  exec 'pedit! ~/.vim/preview.output'
 endfunction
 
 function! PHPIDE_OpenCurrentLineAsFile()
@@ -301,7 +282,7 @@ function! PHPIDE_OpenFileForEdit(filepath, lineNumber)
   call cursor(a:lineNumber, 1)
 endfunction
 
-function! PhanbugDebugPHPFile()
+function! PHPIDE_DebugPHPFile()
   "first, see if there is variable in register 0, the most yanked text
   let possibleVariable = @0
   if strlen(possibleVariable) == 0
@@ -313,12 +294,12 @@ function! PhanbugDebugPHPFile()
   let l = line(".")
   let cmd = ''
   if strlen(possibleVariable) > 0 && possibleVariable != '{'
-    let cmd = '~/phanbug/phanbug --cmd "sh ~/tmp.sh" --action inspect --file '.expand('%:p').' --line '.l.' --depth 4 --hardbreak 1 --variable '''.possibleVariable.''''
+    let cmd = 'php -c ~/cli.ini ~/.vim/plugged/phim/bin/phim debug --output ~/.vim/phimdebug.output --cmd "sh ~/tmp.sh" --file '.expand('%:p').' --line '.l.' --depth 4 --hardbreak 1 --variable '''.possibleVariable.''''
   else
-    let cmd = '~/phanbug/phanbug --cmd "sh ~/tmp.sh" --action inspect --file '.expand('%:p').' --line '.l.' --depth 4 --hardbreak 1'
+    let cmd = 'php -c ~/cli.ini ~/.vim/plugged/phim/bin/phim debug --output ~/.vim/phimdebug.output --cmd "sh ~/tmp.sh" --file '.expand('%:p').' --line '.l.' --depth 4 --hardbreak 1'
   endif
   let result=system(cmd)
-  exec 'pedit! /tmp/phanbug_output'
+  exec 'pedit! ~/.vim/phimdebug.output'
   wincmd k
   normal! gg
   map <ENTER> <esc>:silent call PHPIDE_OpenCurrentLineAsFile()<cr>
