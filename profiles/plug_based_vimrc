@@ -85,6 +85,9 @@ function! PHPIDE_SETUP()
     "use phanbug to debug php
     map <C-D> :call PhanbugDebugPHPFile()<CR>
 
+    "convenient way to search current word in project
+    map <C-S> :call PHPIDE_FindCurrentWordInProject()<CR>
+
     "when press control i in normal mode, open the current project file list 
     nmap <C-I> <esc>:call PHPIDE_OpenProjectFileList()<cr>
 
@@ -218,6 +221,12 @@ function! PHPIDE_OpenProjectFileList()
   exec 'silent pedit! '.$project_file_index
   "now make sure we just display the file index
   map <ENTER> <esc>:call PHPIDE_OpenCurrentLineAsFile()<cr>
+  wincmd k
+endfunction
+
+function! PHPIDE_FindCurrentWordInProject()
+  let possibleWord = expand('<cword>')
+  call PHPIDE_FindWordInProject(possibleWord)
   wincmd k
 endfunction
 
