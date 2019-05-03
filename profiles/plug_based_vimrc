@@ -98,6 +98,7 @@ function! PHPIDE_SETUP()
 
     "define the Find-In-Project user command to allow searching in the project
     command! -nargs=1 FIP call PHPIDE_FindWordInProject(<f-args>)
+    command! -nargs=1 F call PHPIDE_FindWordInProject(<f-args>)
 endfunction
 
 function! OpenCurrentLineAsFile()
