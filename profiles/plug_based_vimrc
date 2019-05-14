@@ -167,8 +167,6 @@ function! RegenerateFileIndex(project_file_extensions)
     let x = system(cmd1)
     let cmd2 = 'php -c ~/cli.ini ~/.vim/plugged/phim/bin/phim project.gethash --project '''.$cur_vim_project.''''
     let $cur_vim_project_hash = system(cmd2)
-    let cmd3 = 'php -c ~/cli.ini ~/.vim/plugged/phim/bin/phim project.init --project '''.$cur_vim_project.''' &'
-    let y = system(cmd3)
     let g:openFiles = []
     let g:openFilesIndex = -1
 endfunction
