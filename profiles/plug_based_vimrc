@@ -163,7 +163,7 @@ endfunction
 function! RegenerateFileIndex(project_file_extensions)
     echom "Generating project related indexes..."
     let result_list = '~/.vim/preview.output'
-    let cmd1 = 'find $(pwd) -type f -name "*.'.a:project_file_extensions.'" >'.$project_file_index
+    let cmd1 = 'php -c ~/cli.ini ~/.vim/plugged/phim/bin/phim project.listfiles --project '''.$cur_vim_project.''' > '.$project_file_index
     let x = system(cmd1)
     let cmd2 = 'php -c ~/cli.ini ~/.vim/plugged/phim/bin/phim project.gethash --project '''.$cur_vim_project.''''
     let $cur_vim_project_hash = system(cmd2)
@@ -244,10 +244,8 @@ function! PHPIDE_OpenCurrentLineAsFile()
   if len(line_comps) < 2
     let possibleFile = line_comps[0]
     let fileLength = strlen(possibleFile)
-    if possibleFile[fileLength - 4:fileLength] == '.php'
-      let filepath = fnameescape(possibleFile)
-      call PHPIDE_OpenFileForEdit(filepath, 1)
-    endif
+    let filepath = fnameescape(possibleFile)
+    call PHPIDE_OpenFileForEdit(filepath, 1)
     return
   endif
   let possibleFile = line_comps[1]
@@ -295,9 +293,9 @@ function! PHPIDE_DebugPHPFile()
   let l = line(".")
   let cmd = ''
   if strlen(possibleVariable) > 0 && possibleVariable != '{'
-    let cmd = 'php -c ~/cli.ini ~/.vim/plugged/phim/bin/phim debug --output ~/.vim/phimdebug.output --cmd "sh ~/tmp.sh" --file '.expand('%:p').' --line '.l.' --depth 4 --hardbreak 1 --variable '''.possibleVariable.''''
+    let cmd = 'php -c ~/cli.ini ~/.vim/plugged/phim/bin/phim debug --cmd "sh ~/tmp.sh" --file '.expand('%:p').' --line '.l.' --depth 4 --variable '''.possibleVariable.''' > ~/.vim/phimdebug.output'
   else
-    let cmd = 'php -c ~/cli.ini ~/.vim/plugged/phim/bin/phim debug --output ~/.vim/phimdebug.output --cmd "sh ~/tmp.sh" --file '.expand('%:p').' --line '.l.' --depth 4 --hardbreak 1'
+    let cmd = 'php -c ~/cli.ini ~/.vim/plugged/phim/bin/phim debug --cmd "sh ~/tmp.sh" --file '.expand('%:p').' --line '.l.' --depth 4 > ~/.vim/phimdebug.output'
   endif
   let result=system(cmd)
   exec 'pedit! ~/.vim/phimdebug.output'
@@ -411,9 +409,9 @@ map <C-P>  :call ShowProjectList() <cr>
 let $cur_vim_project_dir = "current"
 
 "custom file type configuration
-au FileType javascript setl sw=2 sts=2 et
-au FileType css setl sw=2 sts=2 et
-au FileType vue setl sw=2 sts=2 et
+au FileType javascript setl sw=4 sts=4 et
+au FileType css setl sw=4 sts=4 et
+au FileType vue setl sw=4 sts=4 et
 
 "trim trailing whitespace in the following files
 autocmd BufWritePre *.js,*.vue :call StripTrailingWhitespaces()
