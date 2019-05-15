@@ -302,8 +302,6 @@ function! PHPIDE_DebugPHPFile()
   map <ENTER> <esc>:silent call PHPIDE_OpenCurrentLineAsFile()<cr>
 endfunction
 
-set TZ=EST4
-
 " set GUI font
 set guifont=Monaco:h14
 
