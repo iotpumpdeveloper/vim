@@ -32,6 +32,8 @@ let g:closetag_filenames = "*.html,*.xhtml,*.phtml,*.vue"
 "Plug 'jiangmiao/auto-pairs'
 Plug 'AutoClose'
 
+"code folding
+Plug 'rayburgemeestre/phpfolding.vim'
 
 call plug#end()
 
@@ -383,7 +385,6 @@ set noerrorbells visualbell t_vb=
 
 "Set up gui options
 set guioptions+=c
-
 "show most recent files 
 map     <C-R>       :call ShowMostRecentFileList()<CR> 
 
