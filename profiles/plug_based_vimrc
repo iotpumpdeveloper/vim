@@ -93,6 +93,9 @@ function! PHPIDE_SETUP()
     "when press control i in normal mode, open the current project file list 
     nmap <C-I> <esc>:call PHPIDE_OpenProjectFileList()<cr>
 
+    "map shortcut f in normal mode for folding php file
+    nmap f k:DisablePHPFolds<cr>:EnablePHPFolds<cr>
+
     "clear the register @0
     call setreg(0, [])
 
