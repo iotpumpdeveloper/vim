@@ -210,7 +210,7 @@ function! PHPIDE_SmartSearch()
     let curFile = expand('%:p') 
     let curPos = getcurpos()[2]
     let lineNum = line('.')
-    let cmd = '~/.vim/plugged/phim/bin/phim project.search --file '.curFile.' --line '.lineNum.' --pos '.curPos.' --projecthash '''.$cur_vim_project_hash.''' > '.result_list
+    let cmd = '~/.vim/plugged/phim/bin/phim project.search --file '.curFile.' --line '.lineNum.' --pos '.curPos.' --project '''.$cur_vim_project.''' > '.result_list
     let x = system(cmd)
     let result = system('cat '.result_list)
     exec 'pedit! '.result_list
@@ -238,7 +238,7 @@ endfunction
 
 function! PHPIDE_FindWordInProject(word)
   map <ENTER> <esc>:silent call PHPIDE_OpenCurrentLineAsFile()<cr>
-  let cmd = 'php -c ~/cli.ini ~/.vim/plugged/phim/bin/phim project.agsearch --project '.$cur_vim_project_dir.' --word '.a:word.' > ~/.vim/preview.output'
+  let cmd = 'php ~/.vim/plugged/phim/bin/phim project.agsearch --project '.$cur_vim_project.' --word '.a:word.' > ~/.vim/preview.output'
   let result=system(cmd)
   exec 'pedit! ~/.vim/preview.output'
 endfunction
