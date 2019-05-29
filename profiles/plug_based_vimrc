@@ -238,7 +238,7 @@ endfunction
 
 function! PHPIDE_FindWordInProject(word)
   map <ENTER> <esc>:silent call PHPIDE_OpenCurrentLineAsFile()<cr>
-  let cmd = 'php ~/.vim/plugged/phim/bin/phim project.agsearch --project '.$cur_vim_project.' --word '.a:word.' > ~/.vim/preview.output'
+  let cmd = 'php ~/.vim/plugged/phim/bin/phim project.agsearch --project "'.$cur_vim_project.'" --word "'.a:word.'" > ~/.vim/preview.output'
   let result=system(cmd)
   exec 'pedit! ~/.vim/preview.output'
 endfunction
@@ -298,9 +298,9 @@ function! PHPIDE_DebugPHPFile()
   let l = line(".")
   let cmd = ''
   if strlen(possibleVariable) > 0 && possibleVariable != '{'
-    let cmd = 'php -c ~/cli.ini ~/.vim/plugged/phim/bin/phim debug --cmd "sh ~/tmp.sh" --file '.expand('%:p').' --line '.l.' --depth 4 --variable '''.possibleVariable.''' > ~/.vim/phimdebug.output'
+    let cmd = 'php ~/.vim/plugged/phim/bin/phim debug --cmd "sh ~/tmp.sh" --file '.expand('%:p').' --line '.l.' --depth 4 --variable '''.possibleVariable.''' > ~/.vim/phimdebug.output'
   else
-    let cmd = 'php -c ~/cli.ini ~/.vim/plugged/phim/bin/phim debug --cmd "sh ~/tmp.sh" --file '.expand('%:p').' --line '.l.' --depth 4 > ~/.vim/phimdebug.output'
+    let cmd = 'php ~/.vim/plugged/phim/bin/phim debug --cmd "sh ~/tmp.sh" --file '.expand('%:p').' --line '.l.' --depth 4 > ~/.vim/phimdebug.output'
   endif
   let result=system(cmd)
   exec 'pedit! ~/.vim/phimdebug.output'
