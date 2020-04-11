@@ -38,6 +38,10 @@ Plug 'rayburgemeestre/phpfolding.vim'
 "toml syntax
 Plug 'cespare/vim-toml'
 
+"indentation guide
+"Plug 'nathanaelkane/vim-indent-guides'
+Plug 'Yggdroot/indentLine'
+
 call plug#end()
 
 function! StripTrailingWhitespaces()
@@ -58,9 +62,9 @@ function! ShowMostRecentFileList()
   map <ENTER> <esc>:silent call OpenCurrentLineAsFile()<cr>
 endfunction
 
-augroup closepreview
-    autocmd InsertLeave * exec 'pedit ~/.vim/preview.output'
-augroup END
+"augroup closepreview
+    "autocmd InsertLeave * exec 'pedit ~/.vim/preview.output'
+"augroup END
 
 function! PHP_SETUP()
     "set tabs and spaces for php
@@ -89,7 +93,7 @@ function! PHPIDE_SETUP()
 
     "debug php
     map <C-D> :call PHPIDE_DebugPHPFile()<CR>
-
+s
     "convenient way to search current word in project
     map <C-S> :call PHPIDE_FindCurrentWordInProject()<CR>
 
@@ -326,6 +330,8 @@ set statusline+=%F:%l:%v
 
 "Custom plugin configuration 
 
+let NERDTreeShowHidden=1
+
 map     <C-N>      :NERDTreeToggle<cr>
 
 set nofoldenable    " disable folding
@@ -354,6 +360,9 @@ set number
 set paste
 set formatoptions=l
 set lbr
+
+set listchars=tab:\|\ 
+set list
 
 "longest auto complete
 set completeopt=longest
@@ -385,6 +394,9 @@ let MRU_Exclude_Files = '\.list$\|\.index$\|\.si$\|\.tip$\|\.term$\|\.fugitivebl
 
 "customize MRU file
 let MRU_File = '/tmp/vim_mru_file_list.index'
+
+"start indentation guide by default
+let g:indent_guides_enable_on_vim_startup = 1
 
 "ignore file changes and just auto read it
 set autoread
@@ -418,6 +430,8 @@ au FileType javascript setl sw=4 sts=4 et
 au FileType css setl sw=4 sts=4 et
 au FileType vue setl sw=4 sts=4 et
 au FileType yml setl sw=2 sts=2 et
+au FileType toml setl sw=4 sts=4 et
+au FileType json setl sw=4 sts=4 et
 
 "trim trailing whitespace in the following files
 autocmd BufWritePre *.js,*.vue :call StripTrailingWhitespaces()
