@@ -63,171 +63,205 @@ function! ShowMostRecentFileList()
 endfunction
 
 "augroup closepreview
-    "autocmd InsertLeave * exec 'pedit ~/.vim/preview.output'
+"autocmd InsertLeave * exec 'pedit ~/.vim/preview.output'
 "augroup END
 
 function! PHP_SETUP()
-    "set tabs and spaces for php
-    filetype plugin indent on
-    " show existing tab with 4 spaces width
-    set tabstop=4
-    " when indenting with '>', use 4 spaces width
-    set shiftwidth=4
-    " On pressing tab, insert 4 spaces
-    set expandtab
+  "set tabs and spaces for php
+  filetype plugin indent on
+  " show existing tab with 4 spaces width
+  set tabstop=4
+  " when indenting with '>', use 4 spaces width
+  set shiftwidth=4
+  " On pressing tab, insert 4 spaces
+  set expandtab
 
-    set fileformats+=dos
+  set fileformats+=dos
 endfunction
 
 function! PHPIDE_SETUP()
+  "set up shortcuts and mappings so we will have an ide setup for php
+
+  "perform smart search
+  map <C-O> :call PHPIDE_SmartSearch()<CR>
+
+  "when mouse right click, perform smart search
+  map <RightMouse> :call PHPIDE_SmartSearch()<CR>
+
+  "when in normal node and press tab, perform smart search
+  nmap <Tab> :call PHPIDE_SmartSearch()<CR>
+
+  "debug php
+  map <C-D> :call PHPIDE_DebugPHPFile()<CR>
+  s
+  "convenient way to search current word in project
+  map <C-S> :call PHPIDE_FindCurrentWordInProject()<CR>
+
+  "when press control i in normal mode, open the current project file list 
+  nmap <C-I> <esc>:call PHPIDE_OpenProjectFileList()<cr>
+
+  "map shortcut f in normal mode for folding php file
+  nmap f k:DisablePHPFolds<cr>:EnablePHPFolds<cr>
+
+  "clear the register @0
+  call setreg(0, [])
+
+  autocmd BufWritePre *.php call StripTrailingWhitespaces()
+
+  "define the Find-In-Project user command to allow searching in the project
+  command! -nargs=1 FIP call PHPIDE_FindWordInProject(<f-args>)
+  command! -nargs=1 F call PHPIDE_FindWordInProject(<f-args>)
+endfunction
+
+function! OpenCurrentLineAsFile()
+  let line = getline('.')
+  if strlen(line) > 0 && line[0] != '#'
+    let filepath = fnameescape(line)
+    wincmd j
+    exec 'edit! '.filepath
+  endif
+endfunction
+
+function! ShowProjectList()
+  "make sure the window focus is on the rightmost 
+  wincmd l
+  au BufLeave *.list nmap r r
+  pedit! ~/.vim/projects/project.list
+  "map enter key to just switch to project, will not regenerate file index, 0 means no regenerate
+  "but we always should regenerate the index
+  nmap <ENTER> <esc>:call SwitchToProject(1)<cr>  
+  "map r key in normal mode to regenerate file index and switch to project, 1 means regenerate
+  nmap r <esc>:call SwitchToProject(1)<cr> 
+  wincmd k
+endfunction
+
+function! SwitchToProject(regen_index)
+  nmap <C-I> <esc>:call PHPIDE_OpenProjectFileList()<cr>
+
+  let $project_file_index = '~/.vim/projects/fileindex'
+  let $project_function_index = '~/.vim/projecs/php_function_list'
+  let line = getline('.')
+  let $cur_vim_project = line
+  let project_dir = ''
+  let project_file_extensions = ''
+  if strlen(line) > 0 && line[0] != '#'
+    let line_comps = split(line, "|")
+    if len(line_comps) == 2
+      let project_dir = Strip(line_comps[0])
+      let project_file_extensions = Strip(line_comps[1])
+      if a:regen_index == 1
+        exec 'cd '.project_dir 
+        "set the global variable for current project directory 
+        let $cur_vim_project_dir = trim(system('pwd'))
+        call RegenerateFileIndex(project_file_extensions)
+      endif
+    else
+      let project_dir = Strip(line)
+      exec 'cd '.project_dir 
+    endif 
+
+    if len(project_file_extensions) == 0
+      "no extension is given, simply open the most recently open files
+      exec 'silent edit! /tmp/vim_mru_file_list.index'
+    else 
+      call PHPIDE_OpenProjectFileList()
+    endif
+    NERDTree .
+    wincmd w   "try to make sure that the focus is one the file index, not nerdtree 
+
+    "BEGIN PHPIDE_SETUP
     "set up shortcuts and mappings so we will have an ide setup for php
 
     "perform smart search
     map <C-O> :call PHPIDE_SmartSearch()<CR>
 
-    "when mouse right click, perform smart search
+    ""when mouse right click, perform smart search
     map <RightMouse> :call PHPIDE_SmartSearch()<CR>
 
-    "when in normal node and press tab, perform smart search
+    ""when in normal node and press tab, perform smart search
     nmap <Tab> :call PHPIDE_SmartSearch()<CR>
 
-    "debug php
+    ""debug php
     map <C-D> :call PHPIDE_DebugPHPFile()<CR>
-s
-    "convenient way to search current word in project
+    "s
+    ""convenient way to search current word in project
     map <C-S> :call PHPIDE_FindCurrentWordInProject()<CR>
 
-    "when press control i in normal mode, open the current project file list 
+    ""when press control i in normal mode, open the current project file list 
     nmap <C-I> <esc>:call PHPIDE_OpenProjectFileList()<cr>
 
-    "map shortcut f in normal mode for folding php file
+    ""map shortcut f in normal mode for folding php file
     nmap f k:DisablePHPFolds<cr>:EnablePHPFolds<cr>
 
-    "clear the register @0
+    ""clear the register @0
     call setreg(0, [])
 
     autocmd BufWritePre *.php call StripTrailingWhitespaces()
 
-    "define the Find-In-Project user command to allow searching in the project
+    ""define the Find-In-Project user command to allow searching in the project
     command! -nargs=1 FIP call PHPIDE_FindWordInProject(<f-args>)
     command! -nargs=1 F call PHPIDE_FindWordInProject(<f-args>)
-endfunction
 
-function! OpenCurrentLineAsFile()
-    let line = getline('.')
-    if strlen(line) > 0 && line[0] != '#'
-        let filepath = fnameescape(line)
-        wincmd j
-        exec 'edit! '.filepath
-    endif
-endfunction
-
-function! ShowProjectList()
-    "make sure the window focus is on the rightmost 
-    wincmd l
-    au BufLeave *.list nmap r r
-    pedit! ~/.vim/projects/project.list
-    "map enter key to just switch to project, will not regenerate file index, 0 means no regenerate
-    "but we always should regenerate the index
-    nmap <ENTER> <esc>:call SwitchToProject(1)<cr>  
-    "map r key in normal mode to regenerate file index and switch to project, 1 means regenerate
-    nmap r <esc>:call SwitchToProject(1)<cr> 
-    wincmd k
-endfunction
-
-function! SwitchToProject(regen_index)
-    nmap <C-I> <esc>:call PHPIDE_OpenProjectFileList()<cr>
-
-    let $project_file_index = '~/.vim/projects/fileindex'
-    let $project_function_index = '~/.vim/projecs/php_function_list'
-    let line = getline('.')
-    let $cur_vim_project = line
-    let project_dir = ''
-    let project_file_extensions = ''
-    if strlen(line) > 0 && line[0] != '#'
-        let line_comps = split(line, "|")
-        if len(line_comps) == 2
-            let project_dir = Strip(line_comps[0])
-            let project_file_extensions = Strip(line_comps[1])
-            if a:regen_index == 1
-                exec 'cd '.project_dir 
-                "set the global variable for current project directory 
-                let $cur_vim_project_dir = trim(system('pwd'))
-                call RegenerateFileIndex(project_file_extensions)
-            endif
-        else
-            let project_dir = Strip(line)
-            exec 'cd '.project_dir 
-        endif 
-
-        if len(project_file_extensions) == 0
-            "no extension is given, simply open the most recently open files
-            exec 'silent edit! /tmp/vim_mru_file_list.index'
-        else 
-            call PHPIDE_OpenProjectFileList()
-        endif
-        NERDTree .
-        wincmd w   "try to make sure that the focus is one the file index, not nerdtree 
-        call PHPIDE_SETUP()
-    endif
+    ""END PHPIDE_SETUP()
+  endif
 endfunction
 
 function! RegenerateFileIndex(project_file_extensions)
-    echom "Generating project related indexes..."
-    let result_list = '~/.vim/preview.output'
-    let cmd1 = 'php ~/.vim/plugged/phim/bin/phim project.listfiles --project '''.$cur_vim_project.''' > '.$project_file_index
-    let x = system(cmd1)
-    let cmd2 = 'php ~/.vim/plugged/phim/bin/phim project.gethash --project '''.$cur_vim_project.''''
-    let $cur_vim_project_hash = system(cmd2)
-    let cmd3 = 'php ~/.vim/plugged/phim/bin/phim project.init --project '''.$cur_vim_project.''' > /dev/null 2>&1 &'
-    let r = system(cmd3)
-    let g:openFiles = []
-    let g:openFilesIndex = -1
+  echom "Generating project related indexes..."
+  let result_list = '~/.vim/preview.output'
+  let cmd1 = 'php ~/.vim/plugged/phim/bin/phim project.listfiles --project '''.$cur_vim_project.''' > '.$project_file_index
+  let x = system(cmd1)
+  let cmd2 = 'php ~/.vim/plugged/phim/bin/phim project.gethash --project '''.$cur_vim_project.''''
+  let $cur_vim_project_hash = system(cmd2)
+  let cmd3 = 'php ~/.vim/plugged/phim/bin/phim project.init --project '''.$cur_vim_project.''' > /dev/null 2>&1 &'
+  let r = system(cmd3)
+  let g:openFiles = []
+  let g:openFilesIndex = -1
 endfunction
 
 
 function! GotoBuffer(bufname)
-    let bufmap = map(range(1, winnr('$')), '[bufname(winbufnr(v:val)), v:val]')
-    let thewindow = filter(bufmap, 'v:val[0] =~ a:bufname')[0][1]
-    "execute thewindow 'wincmd w'
+  let bufmap = map(range(1, winnr('$')), '[bufname(winbufnr(v:val)), v:val]')
+  let thewindow = filter(bufmap, 'v:val[0] =~ a:bufname')[0][1]
+  "execute thewindow 'wincmd w'
 endfunction
 
 function! GetVisualSelection()
-    try
-        let a_save = @a
-        normal! gv"ay
-        return @a
-    finally
-        let @a = a_save
-    endtry
+  try
+    let a_save = @a
+    normal! gv"ay
+    return @a
+  finally
+    let @a = a_save
+  endtry
 endfunction
 
 function! ProcessFileChangedShell() 
-    if v:fcs_reason == 'mode' || v:fcs_reason == 'time' 
-        let v:fcs_choice = '' 
-    else 
-        let v:fcs_choice = 'ask' 
-    endif 
+  if v:fcs_reason == 'mode' || v:fcs_reason == 'time' 
+    let v:fcs_choice = '' 
+  else 
+    let v:fcs_choice = 'ask' 
+  endif 
 endfunction 
 
 "autocmd FileChangedShell <buffer> call ProcessFileChangedShell() 
 
 function! PHPIDE_SmartSearch()
-    let result_list = '~/.vim/preview.output'
-    let curFile = expand('%:p') 
-    let curPos = getcurpos()[2]
-    let lineNum = line('.')
-    let cmd = '~/.vim/plugged/phim/bin/phim project.search --file '.curFile.' --line '.lineNum.' --pos '.curPos.' --project '''.$cur_vim_project.''' > '.result_list
-    let x = system(cmd)
-    let result = system('cat '.result_list)
-    exec 'pedit! '.result_list
-    wincmd k
-    map <ENTER> <esc>:silent call PHPIDE_OpenCurrentLineAsFile()<cr>
-    "if the result contains only 1 entry, immediate only the matching file
-    let line_comps = split(result, "\n")
-    if len(line_comps) == 1
-        call PHPIDE_OpenCurrentLineAsFile()
-    endif
+  let result_list = '~/.vim/preview.output'
+  let curFile = expand('%:p') 
+  let curPos = getcurpos()[2]
+  let lineNum = line('.')
+  let cmd = '~/.vim/plugged/phim/bin/phim project.search --file '.curFile.' --line '.lineNum.' --pos '.curPos.' --project '''.$cur_vim_project.''' > '.result_list
+  let x = system(cmd)
+  let result = system('cat '.result_list)
+  exec 'pedit! '.result_list
+  wincmd k
+  map <ENTER> <esc>:silent call PHPIDE_OpenCurrentLineAsFile()<cr>
+  "if the result contains only 1 entry, immediate only the matching file
+  let line_comps = split(result, "\n")
+  if len(line_comps) == 1
+    call PHPIDE_OpenCurrentLineAsFile()
+  endif
 endfunction
 
 function! PHPIDE_OpenProjectFileList()
