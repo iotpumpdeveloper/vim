@@ -444,6 +444,7 @@ map     <C-R>       :call ShowMostRecentFileList()<CR>
 
 "set up php
 au BufEnter *.php :call PHP_SETUP()
+au BufEnter *.inc :call PHP_SETUP()
 
 "in the tmp file, when click, open the current file
 "au BufEnter tmp nmap <LeftRelease> :silent call OpenCurrentLineAsFile()<CR>
@@ -468,7 +469,7 @@ au FileType toml setl sw=4 sts=4 et
 au FileType json setl sw=4 sts=4 et
 
 "trim trailing whitespace in the following files
-autocmd BufWritePre *.js,*.vue :call StripTrailingWhitespaces()
+autocmd BufWritePre *.js,*.vue,*.inc :call StripTrailingWhitespaces()
 
 "set mjs file syntax highlighting
 autocmd BufNewFile,BufRead *.mjs   set syntax=javascript
